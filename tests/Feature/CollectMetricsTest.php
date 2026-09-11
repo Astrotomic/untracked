@@ -2,10 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Analytics\Enums\Browser;
 use App\Analytics\Enums\Device;
 use App\Analytics\Enums\Format;
-use App\Analytics\Enums\OperatingSystem;
 use App\Models\Website;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
@@ -22,8 +20,8 @@ class CollectMetricsTest extends TestCase
         $payload = [
             'path' => '/blog/example?utm_source=test',
             'country' => 'de',
-            'browser' => Browser::Firefox->value,
-            'os' => OperatingSystem::Linux->value,
+            'browser' => 'Firefox',
+            'os' => 'Linux',
             'device' => Device::Desktop->value,
             'format' => Format::Markdown->value,
         ];
@@ -49,16 +47,33 @@ class CollectMetricsTest extends TestCase
         $this->assertFalse(Schema::hasColumn('daily_metrics', 'updated_at'));
     }
 
-    public function test_processed_collection_rejects_values_outside_the_coarse_enums(): void
+    public function test_processed_collection_normalizes_browser_and_os_families(): void
     {
         $website = $this->website();
 
         $this->postJson(route('collect.processed', $website), [
             'path' => '/',
             'country' => 'DE',
-            'browser' => 'Firefox 142.0.1',
-            'os' => OperatingSystem::Linux->value,
+            'browser' => 'Firefox iOS',
+            'os' => 'Windows XP',
             'device' => Device::Desktop->value,
+            'format' => Format::Html->value,
+        ])->assertNoContent();
+
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'browser', 'value' => 'Firefox']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'os', 'value' => 'Windows']);
+    }
+
+    public function test_processed_collection_still_rejects_values_outside_closed_enums(): void
+    {
+        $website = $this->website();
+
+        $this->postJson(route('collect.processed', $website), [
+            'path' => '/',
+            'country' => 'DE',
+            'browser' => 'Firefox',
+            'os' => 'Linux',
+            'device' => 'laptop',
             'format' => Format::Html->value,
         ])->assertUnprocessable();
 
@@ -76,8 +91,8 @@ class CollectMetricsTest extends TestCase
             ])
             ->assertNoContent();
 
-        $this->assertDatabaseHas('daily_metrics', ['metric' => 'browser', 'value' => Browser::Firefox->value]);
-        $this->assertDatabaseHas('daily_metrics', ['metric' => 'os', 'value' => OperatingSystem::Linux->value]);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'browser', 'value' => 'Firefox']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'os', 'value' => 'Linux']);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'device', 'value' => Device::Desktop->value]);
         $this->assertFalse(Schema::hasColumn('daily_metrics', 'ip'));
         $this->assertFalse(Schema::hasColumn('daily_metrics', 'user_agent'));
@@ -102,8 +117,8 @@ class CollectMetricsTest extends TestCase
             ->postJson(route('collect.raw', $website), ['path' => '/'])
             ->assertNoContent();
 
-        $this->assertDatabaseHas('daily_metrics', ['metric' => 'browser', 'value' => Browser::Bot->value]);
-        $this->assertDatabaseHas('daily_metrics', ['metric' => 'os', 'value' => OperatingSystem::Bot->value]);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'browser', 'value' => 'Bot']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'os', 'value' => 'Bot']);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'device', 'value' => Device::Bot->value]);
     }
 
