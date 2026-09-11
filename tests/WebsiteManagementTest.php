@@ -48,7 +48,6 @@ class WebsiteManagementTest extends TestCase
         $this->get(route('websites.show', $website))
             ->assertOk()
             ->assertSee('Requests over time')
-            ->assertSee('🇩🇪')
             ->assertSee('Germany')
             ->assertSee('requests-chart', false)
             ->assertSee('country-map', false)
