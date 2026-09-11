@@ -16,17 +16,28 @@ if (dashboardData) {
             type: 'line',
             data: {
                 labels: trend.map((point) => point.label),
-                datasets: [{
-                    data: trend.map((point) => point.count),
-                    borderColor: '#e4e4e7',
-                    backgroundColor: 'rgba(161, 161, 170, 0.12)',
-                    borderWidth: 2,
-                    fill: true,
-                    pointRadius: 0,
-                    pointHoverRadius: 4,
-                    pointBackgroundColor: '#fafafa',
-                    tension: 0.35,
-                }],
+                datasets: [
+                    {
+                        label: 'Human',
+                        data: trend.map((point) => point.human),
+                        borderColor: '#e4e4e7',
+                        backgroundColor: '#e4e4e7',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                        tension: 0.35,
+                    },
+                    {
+                        label: 'Bots',
+                        data: trend.map((point) => point.bot),
+                        borderColor: '#f59e0b',
+                        backgroundColor: '#f59e0b',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                        tension: 0.35,
+                    },
+                ],
             },
             options: {
                 responsive: true,
@@ -37,13 +48,18 @@ if (dashboardData) {
                 },
                 plugins: {
                     legend: {
-                        display: false,
+                        display: true,
+                        align: 'end',
+                        labels: {
+                            color: '#a1a1aa',
+                            usePointStyle: true,
+                            pointStyle: 'line',
+                        },
                     },
                     tooltip: {
-                        displayColors: false,
                         callbacks: {
                             title: (items) => trend[items[0].dataIndex].date,
-                            label: (context) => `${context.parsed.y.toLocaleString()} requests`,
+                            label: (context) => `${context.dataset.label}: ${context.parsed.y.toLocaleString()}`,
                         },
                     },
                 },
