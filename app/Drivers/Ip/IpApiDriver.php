@@ -13,7 +13,7 @@ final readonly class IpApiDriver implements IpDriver
         private int $timeout,
     ) {}
 
-    public function country(string $ip): string
+    public function country(string $ip): ?string
     {
         try {
             $response = Http::timeout($this->timeout)
@@ -23,14 +23,14 @@ final readonly class IpApiDriver implements IpDriver
                 ]);
 
             if (! $response->successful() || $response->json('status') !== 'success') {
-                return 'XX';
+                return null;
             }
 
             $country = strtoupper((string) $response->json('countryCode'));
         } catch (Throwable) {
-            return 'XX';
+            return null;
         }
 
-        return preg_match('/^[A-Z]{2}$/', $country) === 1 ? $country : 'XX';
+        return preg_match('/^[A-Z]{2}$/', $country) === 1 ? $country : null;
     }
 }

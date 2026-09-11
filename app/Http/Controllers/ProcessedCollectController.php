@@ -17,9 +17,9 @@ class ProcessedCollectController extends Controller
     {
         $validated = $request->validate([
             'path' => ['required', 'string', 'max:2048'],
-            'country' => ['required', 'string', 'regex:/^[A-Za-z]{2}$/'],
-            'browser' => ['required', 'string', 'max:100'],
-            'os' => ['required', 'string', 'max:100'],
+            'country' => ['nullable', 'string', 'regex:/^[A-Za-z]{2}$/'],
+            'client' => ['nullable', 'string', 'max:100'],
+            'os' => ['nullable', 'string', 'max:100'],
             'device' => ['required', Rule::enum(Device::class)],
             'format' => ['required', Rule::enum(Format::class)],
             'referrer' => ['nullable', 'string', 'max:2048'],
@@ -31,8 +31,8 @@ class ProcessedCollectController extends Controller
         ]);
 
         $userAgent = UserAgent::from(
-            browser: $validated['browser'],
-            os: $validated['os'],
+            client: $validated['client'] ?? null,
+            os: $validated['os'] ?? null,
             device: $validated['device'],
         );
 
@@ -42,7 +42,7 @@ class ProcessedCollectController extends Controller
 
         $website->record(Dimensions::from(
             path: $validated['path'],
-            country: $validated['country'],
+            country: $validated['country'] ?? null,
             userAgent: $userAgent,
             format: Format::from($validated['format']),
             referrer: $validated['referrer'] ?? null,

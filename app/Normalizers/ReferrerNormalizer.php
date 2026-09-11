@@ -13,6 +13,11 @@ final readonly class ReferrerNormalizer implements Normalizer
     public function normalize(?string $value, ?string $websiteDomain = null): ?string
     {
         $host = $this->normalizeHost($value);
+
+        if ($host === null) {
+            return null;
+        }
+
         $websiteDomain = $this->normalizeHost($websiteDomain);
 
         if ($websiteDomain !== null && Str::equals($websiteDomain, $host)) {

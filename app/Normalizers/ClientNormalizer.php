@@ -6,7 +6,7 @@ use App\Concerns\Resolvable;
 use App\Contracts\Normalizer;
 use Illuminate\Support\Str;
 
-final readonly class BrowserNormalizer implements Normalizer
+final readonly class ClientNormalizer implements Normalizer
 {
     use Resolvable;
 

@@ -12,19 +12,13 @@ final readonly class CountryNormalizer implements Normalizer
 
     public function __construct(private ISO3166 $iso3166) {}
 
-    public function normalize(?string $value): string
+    public function normalize(?string $value): ?string
     {
         if (empty($value)) {
-            return 'XX';
+            return null;
         }
 
-        $country = $this->resolve($value);
-
-        if (empty($country)) {
-            return 'XX';
-        }
-
-        return $country['alpha2'];
+        return $this->resolve($value)['alpha2'] ?? null;
     }
 
     /**

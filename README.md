@@ -31,7 +31,7 @@ One request can increment counters such as:
 ```text
 2026-09-11 | path         | /blog/example       | +1
 2026-09-11 | country      | DE                  | +1
-2026-09-11 | browser      | Firefox             | +1
+2026-09-11 | client       | Firefox             | +1
 2026-09-11 | os           | Linux               | +1
 2026-09-11 | device       | desktop             | +1
 2026-09-11 | format       | markdown            | +1
@@ -41,9 +41,9 @@ One request can increment counters such as:
 2026-09-11 | utm_campaign | launch              | +1
 ```
 
-Those counters are independent. Untracked cannot later answer which German request used Firefox, which referrer led to a specific page, which UTM campaign used which browser, or whether two requests came from the same person.
+Those counters are independent. Untracked cannot later answer which German request used Firefox, which referrer led to a specific page, which UTM campaign used which client, or whether two requests came from the same person.
 
-Optional dimensions such as referrer and UTM parameters only create counters when they are present. There are no fake `(direct)` or empty rows.
+Optional dimensions such as country, referrer and UTM parameters only create counters when they are present. There are no magic fallback or empty rows.
 
 The analytics table intentionally has no `id`, `created_at` or `updated_at`. Exact request times would make otherwise independent counters correlatable again.
 
@@ -89,7 +89,11 @@ Untracked deliberately separates requests that still contain raw client informat
 POST /api/websites/{uuid}/collect/raw
 ```
 
-The raw collector reads the request IP and User-Agent, resolves them in memory, reduces them to coarse analytics dimensions and immediately forgets the raw values. Only the independent daily counters are persisted.
+The raw collector works from four raw values: the full page URL, IP address, User-Agent and referrer. Browser clients only send the URL and referrer explicitly; the IP and User-Agent already arrive with the HTTP request.
+
+For human traffic Untracked derives pathname and UTM parameters from the URL, country from the IP, client/OS/device from the User-Agent, and referrer domain from the full referrer. The raw values are then discarded and only independent daily counters are persisted. Raw browser collection is always recorded as HTML.
+
+Bot traffic is reduced differently. Once the User-Agent is recognized as a bot, Untracked skips IP geolocation and does not persist country, OS, referrer or UTM metrics. It keeps path, format and `device=bot`, plus the known operator in the `client` metric when possible, such as `OpenAI`, `Anthropic` or `Google`.
 
 The bundled browser script uses this endpoint:
 
@@ -97,9 +101,9 @@ The bundled browser script uses this endpoint:
 <script defer data-website-id="YOUR_WEBSITE_UUID" src="https://analytics.example.com/script.js"></script>
 ```
 
-The script sends only the current pathname, `html` format, external referrer hostname and the five standard UTM values when present. It parses `document.referrer` and `window.location.search` in the browser, so the full referrer URL and full page query never leave the page.
+The script deliberately does no analytics parsing itself. It posts `window.location.href` and `document.referrer` and leaves all reduction to Untracked. That means the full page URL and referrer reach the Untracked server transiently, but neither is persisted as analytics data.
 
-Same-site referrers are ignored. Browser requests include an `Origin` header, which Untracked checks against the website's configured domain.
+Same-site referrers are ignored during normalization. Browser requests include an `Origin` header, which Untracked checks against the website's configured domain.
 
 ### Processed collection
 
@@ -107,13 +111,13 @@ Same-site referrers are ignored. Browser requests include an `Origin` header, wh
 POST /api/websites/{uuid}/collect/processed
 ```
 
-Use this from a backend that already reduced the request itself. This endpoint never reads the request IP or User-Agent for analytics. Browser and OS values run through the same semantic normalizers as raw UAP data; device and format stay small backed enums.
+Use this from a backend that already reduced the request itself. This endpoint never reads the request IP or User-Agent for analytics. Client and OS values run through the same semantic normalizers as raw UAP data; device and format stay small backed enums. Country, client and OS are optional; missing values simply do not create metric rows.
 
 ```json
 {
   "path": "/blog/example",
   "country": "DE",
-  "browser": "Firefox",
+  "client": "Firefox",
   "os": "Linux",
   "device": "desktop",
   "format": "markdown",
@@ -125,6 +129,8 @@ Use this from a backend that already reduced the request itself. This endpoint n
   "utm_content": "hero-link"
 }
 ```
+
+Bot dimensions are reduced with the same rules as raw collection. A processed bot request can provide its operator in `client`, but country, OS, referrer and UTM values are discarded before recording.
 
 Paths are reduced to the pathname before storage, so query strings are discarded. Referrers are reduced to their hostname and same-site referrers are dropped. UTM values are trimmed, control characters are removed and values are bounded to 255 characters.
 
@@ -140,9 +146,9 @@ User-Agent processing uses a Laravel manager/driver setup. The default `uap` dri
 ANALYTICS_USER_AGENT_DRIVER=uap
 ```
 
-UAP already separates each browser and operating-system `family` from its major/minor/patch version fields. Untracked only reads the family fields and ignores all version fields.
+UAP already separates each browser and operating-system `family` from its major/minor/patch version fields. Untracked only reads the family fields and ignores all version fields. The normalized browser family is stored as the `client` dimension because that same dimension also represents non-browser clients such as crawlers.
 
-Browser and operating-system families are intentionally not enums because UAP's family catalogue is data-driven and can grow. Instead, semantic normalizers remove information that belongs to another dimension or is unnecessarily specific:
+Client and operating-system families are intentionally not enums because UAP's family catalogue is data-driven and can grow. Instead, semantic normalizers remove information that belongs to another dimension or is unnecessarily specific:
 
 ```text
 Firefox iOS                  -> Firefox
@@ -159,6 +165,8 @@ Chrome OS                    -> ChromeOS
 
 Unknown future UAP families are kept as their family name rather than silently becoming `Other`. Device remains intentionally coarse: `desktop`, `mobile`, `tablet`, `bot` or `other`. Laptop-sized devices are folded into `desktop`; Untracked does not collect screen dimensions to split them further.
 
+Bot operator detection is also open-ended rather than an enum. Known User-Agent signatures are reduced to the company behind the bot, currently including OpenAI, Anthropic, Google, Microsoft, Apple, Meta, Perplexity, DuckDuckGo, ByteDance, Yandex and Baidu. Unknown bots still have `device=bot`, but no fake `Bot` or `Other` client/OS metric is stored.
+
 ## IP processing
 
 IP-to-country resolution also uses a Laravel manager/driver setup.
@@ -170,7 +178,9 @@ ANALYTICS_IP_DRIVER=maxmind
 ANALYTICS_MAXMIND_DATABASE=/absolute/path/to/GeoLite2-Country.mmdb
 ```
 
-This uses the local MaxMind GeoLite2/GeoIP2 database through `geoip2/geoip2`. The IP never leaves your server. If the database is missing or the address cannot be resolved, country becomes `XX`.
+This uses the local MaxMind GeoLite2/GeoIP2 database through `geoip2/geoip2`. The IP never leaves your server. If the database is missing or the address cannot be resolved, country is `null` and no country metric is stored.
+
+Bot requests do not perform country resolution at all.
 
 This is the privacy-first production setup.
 
@@ -187,9 +197,20 @@ This is convenient for quick testing because it needs no local database, but it 
 
 Bot collection is configured per website.
 
-When disabled, detected bot requests are discarded before any counter is incremented. When enabled, bots are aggressively coarsened to `Bot` / `bot` browser, OS and device values rather than preserving individual crawler identities.
+When disabled, detected bot requests are discarded before any counter is incremented.
 
-Processed integrations represent bots with the same coarse values; there is no separate visitor or bot identity.
+When enabled, bots are treated as a separate semantic kind of traffic instead of pretending they are privacy-sensitive human visitors. Their infrastructure location and attribution data would pollute audience metrics, so country, OS, referrer and UTM dimensions are dropped. Path and format stay because they describe what the bot actually requested. `device` is `bot`, and a known operator is kept in the `client` metric.
+
+For example, an OpenAI bot requesting `/blog/example` as Markdown can increment:
+
+```text
+path    /blog/example
+client  OpenAI
+device  bot
+format  markdown
+```
+
+It does not increment `US` just because the crawler ran from US infrastructure, and a UTM URL it discovered does not become campaign attribution.
 
 ## Privacy model
 

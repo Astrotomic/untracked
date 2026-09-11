@@ -24,7 +24,7 @@
         $labels = [
             'path' => 'Paths',
             'country' => 'Countries',
-            'browser' => 'Browsers',
+            'client' => 'Clients',
             'os' => 'Operating systems',
             'device' => 'Devices',
             'format' => 'Formats',
@@ -57,21 +57,21 @@
 
     <section class="mt-8 rounded-xl border border-zinc-800 p-6">
         <h2 class="font-medium">Browser collection</h2>
-        <p class="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">The script derives browser, OS and device from the request in memory. It sends only the pathname, external referrer hostname and standard UTM values; full referrer URLs and full query strings never leave the page.</p>
+        <p class="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">The script only sends the full page URL and referrer. Untracked derives path, UTM values, country, client, OS and device in memory; the raw URL, IP, User-Agent and referrer are never persisted. Bot traffic keeps path, format, device and known operator only, so crawler infrastructure does not pollute country or attribution metrics.</p>
 
         <pre class="mt-4 overflow-x-auto rounded-lg bg-black/40 p-4 text-sm text-zinc-300"><code>&lt;script defer data-website-id="{{ $website->uuid }}" src="{{ url('/script.js') }}"&gt;&lt;/script&gt;</code></pre>
     </section>
 
     <section class="mt-6 rounded-xl border border-zinc-800 p-6">
         <h2 class="font-medium">Server-side collection</h2>
-        <p class="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">Send only the coarse values you actually want to keep. This lets the analytics server avoid receiving the visitor's raw IP or User-Agent at all.</p>
+        <p class="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">Send only the coarse values you actually want to keep. Country, client and OS are optional; when omitted, no corresponding metric is stored. Bot dimensions are reduced with the same rules as raw collection. This lets the analytics server avoid receiving the visitor's raw IP or User-Agent at all.</p>
 
         <pre class="mt-4 overflow-x-auto rounded-lg bg-black/40 p-4 text-sm text-zinc-300"><code>POST {{ route('collect.processed', $website) }}
 
 {
   "path": "/blog/example",
   "country": "DE",
-  "browser": "Firefox",
+  "client": "Firefox",
   "os": "Linux",
   "device": "desktop",
   "format": "markdown",

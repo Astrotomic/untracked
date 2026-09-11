@@ -36,6 +36,23 @@ class Website extends Model
         return $this->hasMany(DailyMetric::class);
     }
 
+    public function recordRaw(string $url, string $ip, string $userAgent, ?string $referrer): void
+    {
+        $dimensions = Dimensions::fromRaw(
+            url: $url,
+            ip: $ip,
+            userAgent: $userAgent,
+            referrer: $referrer,
+            website: $this,
+        );
+
+        if ($dimensions->userAgent->isBot() && ! $this->should_track_bots) {
+            return;
+        }
+
+        $this->record($dimensions);
+    }
+
     public function record(Dimensions $dimensions): void
     {
         $date = CarbonImmutable::now($this->timezone)->toDateString();
