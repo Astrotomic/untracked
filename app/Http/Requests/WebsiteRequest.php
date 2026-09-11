@@ -30,7 +30,7 @@ class WebsiteRequest extends FormRequest
                 Rule::unique('websites', 'domain')->ignore($website?->getKey()),
             ],
             'timezone' => ['required', 'timezone'],
-            'track_bots' => ['required', 'boolean'],
+            'should_track_bots' => ['required', 'boolean'],
         ];
     }
 }
