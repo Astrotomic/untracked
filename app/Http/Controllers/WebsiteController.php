@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Device;
 use App\Enums\Metric;
 use App\Http\Requests\WebsiteRequest;
 use App\Models\DailyMetric;
@@ -61,14 +62,26 @@ class WebsiteController extends Controller
             ->orderBy('date')
             ->pluck('total', 'date');
 
+        /** @var Collection<string, int|string> $dailyBotRequests */
+        $dailyBotRequests = (clone $query)
+            ->where('metric', Metric::Device->value)
+            ->where('value', Device::Bot->value)
+            ->selectRaw('date, SUM(count) as total')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->pluck('total', 'date');
+
         $trend = collect(range(0, $days - 1))
-            ->map(function (int $offset) use ($dailyRequests, $from): array {
+            ->map(function (int $offset) use ($dailyRequests, $dailyBotRequests, $from): array {
                 $date = $from->copy()->addDays($offset);
+                $requests = (int) $dailyRequests->get($date->toDateString(), 0);
+                $bots = (int) $dailyBotRequests->get($date->toDateString(), 0);
 
                 return [
                     'date' => $date->toDateString(),
                     'label' => $date->format('M j'),
-                    'count' => (int) $dailyRequests->get($date->toDateString(), 0),
+                    'human' => max(0, $requests - $bots),
+                    'bot' => $bots,
                 ];
             });
 
@@ -77,7 +90,7 @@ class WebsiteController extends Controller
         $countryCount = $metrics->get(Metric::Country->value)?->count() ?? 0;
         $deviceMetrics = $metrics->get(Metric::Device->value) ?? collect();
         $botRequests = (int) $deviceMetrics
-            ->where('value', 'bot')
+            ->where('value', Device::Bot->value)
             ->sum(fn (DailyMetric $metric) => $metric->count);
 
         $countryValues = $metrics->get(Metric::Country->value)
