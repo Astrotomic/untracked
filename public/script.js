@@ -6,7 +6,7 @@
         return;
     }
 
-    const endpoint = new URL(`/api/websites/${encodeURIComponent(website)}/collect`, script.src);
+    const endpoint = new URL(`/api/websites/${encodeURIComponent(website)}/collect/raw`, script.src);
     const body = new URLSearchParams({
         path: window.location.pathname,
         format: 'html',
