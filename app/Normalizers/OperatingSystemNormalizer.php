@@ -29,6 +29,7 @@ final readonly class OperatingSystemNormalizer implements Normalizer
             Str::contains($value, 'windows', true) => 'Windows',
             Str::contains($value, ['mac os x', 'mac os', 'macos', 'os x'], true) => 'macOS',
             Str::contains($value, 'android', true) => 'Android',
+            Str::contains($value, 'kaios', true) => 'KaiOS',
             Str::contains($value, 'ios', true) => 'iOS',
             Str::contains($value, ['chrome os', 'chromeos'], true) => 'ChromeOS',
             Str::contains($value, ['linux', 'ubuntu', 'debian', 'fedora', 'centos', 'red hat', 'rhel', 'suse', 'gentoo', 'arch', 'manjaro', 'mint', 'mandriva', 'mageia', 'slackware', 'kubuntu', 'xubuntu', 'lubuntu', 'elementary', 'pop!_os', 'alpine', 'steamos', 'steam os'], true) => 'Linux',

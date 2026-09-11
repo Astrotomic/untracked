@@ -1,12 +1,11 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests;
 
 use App\Models\User;
 use App\Models\Website;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
-use Tests\TestCase;
 
 class WebsiteManagementTest extends TestCase
 {

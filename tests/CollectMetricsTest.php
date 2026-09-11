@@ -1,13 +1,12 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests;
 
 use App\Enums\Device;
 use App\Enums\Format;
 use App\Models\Website;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
-use Tests\TestCase;
 
 class CollectMetricsTest extends TestCase
 {
