@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use App\Models\DailyMetric;
 use App\Models\User;
 use App\Models\Website;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -36,9 +37,19 @@ class WebsiteManagementTest extends TestCase
             'should_track_bots' => true,
         ]);
 
+        DailyMetric::query()->create([
+            'website_uuid' => $website->getKey(),
+            'date' => now($website->timezone)->toDateString(),
+            'metric' => 'country',
+            'value' => 'DE',
+            'count' => 1,
+        ]);
+
         $this->get(route('websites.show', $website))
             ->assertOk()
             ->assertSee('Requests over time')
+            ->assertSee('🇩🇪')
+            ->assertSee('Germany')
             ->assertSee('requests-chart', false)
             ->assertSee('country-map', false)
             ->assertSee('analytics-dashboard-data', false);
