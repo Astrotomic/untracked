@@ -120,7 +120,7 @@ final readonly class Dimensions implements Arrayable, Jsonable, JsonSerializable
 
         $client = $userAgent->client;
 
-        if ($client === null || $client === '' || in_array(strtolower($client), ['bot', 'other'], true)) {
+        if ($client === null || $client === '' || in_array(strtolower($client), [strtolower(Client::BOT), strtolower(Client::OTHER)], true)) {
             $client = null;
         }
 
