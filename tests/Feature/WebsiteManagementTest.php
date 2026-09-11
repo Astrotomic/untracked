@@ -1,0 +1,36 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\User;
+use App\Models\Website;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class WebsiteManagementTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_guests_are_redirected_to_login(): void
+    {
+        $this->get('/websites')->assertRedirect(route('login'));
+    }
+
+    public function test_authenticated_users_can_create_websites(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $response = $this->post(route('websites.store'), [
+            'name' => 'gummibeer.dev',
+            'domain' => 'gummibeer.dev',
+            'timezone' => 'Europe/Berlin',
+            'track_bots' => '1',
+        ]);
+
+        $website = Website::query()->sole();
+
+        $response->assertRedirect(route('websites.show', $website));
+        $this->assertNotNull($website->uuid);
+        $this->assertTrue($website->track_bots);
+    }
+}
