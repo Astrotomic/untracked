@@ -10,18 +10,19 @@ enum Device: string
     case Bot = 'bot';
     case Other = 'other';
 
-    public static function normalize(string $family, OperatingSystem $os, string $userAgent = ''): self
+    public static function normalize(string $family, string $os, string $userAgent = ''): self
     {
         $family = strtolower(trim($family));
+        $os = strtolower(trim($os));
         $userAgent = strtolower($userAgent);
 
         return match (true) {
             $family === 'spider' => self::Bot,
             str_contains($family, 'ipad'), str_contains($family, 'tablet'), str_contains($userAgent, 'tablet') => self::Tablet,
             str_contains($family, 'iphone'), str_contains($family, 'ipod'), str_contains($userAgent, 'mobile') => self::Mobile,
-            $os === OperatingSystem::IOS => self::Mobile,
-            $os === OperatingSystem::Android && $family !== 'other' && $family !== '' => self::Mobile,
-            in_array($os, [OperatingSystem::Windows, OperatingSystem::MacOS, OperatingSystem::Linux, OperatingSystem::ChromeOS], true) => self::Desktop,
+            $os === 'ios' => self::Mobile,
+            $os === 'android' && $family !== 'other' && $family !== '' => self::Mobile,
+            in_array($os, ['windows', 'macos', 'linux', 'chromeos'], true) => self::Desktop,
             default => self::Other,
         };
     }
