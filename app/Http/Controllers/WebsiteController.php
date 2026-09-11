@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\Metric;
 use App\Http\Requests\WebsiteRequest;
-use App\Managers\Favicons\FaviconManager;
+use App\Managers\FaviconManager;
 use App\Models\DailyMetric;
 use App\Models\Website;
+use App\Values\Client;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -87,16 +88,18 @@ class WebsiteController extends Controller
             ])
             ->all() ?? [];
 
-        $favicons = FaviconManager::make();
+        $favicon = FaviconManager::make()->driver();
         $clientFavicons = $metrics->get(Metric::Client->value)
-            ?->mapWithKeys(fn (DailyMetric $metric): array => [
-                $metric->value => $favicons->clientUrl($metric->value),
-            ])
+            ?->mapWithKeys(function (DailyMetric $metric) use ($favicon): array {
+                $domain = (new Client($metric->value))->domain();
+
+                return [$metric->value => $domain === null ? null : $favicon->url($domain)];
+            })
             ->filter()
             ->all() ?? [];
         $referrerFavicons = $metrics->get(Metric::Referrer->value)
             ?->mapWithKeys(fn (DailyMetric $metric): array => [
-                $metric->value => $favicons->url($metric->value),
+                $metric->value => $favicon->url($metric->value),
             ])
             ->all() ?? [];
 
