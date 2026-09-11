@@ -20,7 +20,7 @@ jobs:
         with:
           php-version: '8.5'
           coverage: none
-      - run: composer install --no-interaction --prefer-dist
+      - run: composer install --prefer-dist --no-interaction
       - run: cp .env.example .env
       - run: php artisan key:generate
       - run: php artisan test
