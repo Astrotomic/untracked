@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('daily_metrics', function (Blueprint $table): void {
-            $table->foreignUuid('website_id')->index()->constrained('websites', 'uuid')->cascadeOnDelete();
+            $table->foreignUuid('website_uuid')->index()->constrained('websites', 'uuid')->cascadeOnDelete();
             $table->date('date')->index();
             $table->string('metric', 32)->index();
             $table->string('value', 500)->index();

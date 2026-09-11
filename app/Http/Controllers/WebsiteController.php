@@ -42,7 +42,7 @@ class WebsiteController extends Controller
 
         /** @var Collection<string, Collection<int, DailyMetric>> $metrics */
         $metrics = DailyMetric::query()
-            ->where('website_id', $website->getKey())
+            ->where('website_uuid', $website->getKey())
             ->where('date', '>=', $from)
             ->selectRaw('metric, value, SUM(count) as count')
             ->groupBy('metric', 'value')

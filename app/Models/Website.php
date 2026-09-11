@@ -46,7 +46,7 @@ class Website extends Model
                 }
 
                 return [
-                    'website_id' => $this->getKey(),
+                    'website_uuid' => $this->getKey(),
                     'date' => $date,
                     'metric' => $metric->value,
                     'value' => $value,
