@@ -18,8 +18,8 @@ class ProcessedCollectController extends Controller
         $validated = $request->validate([
             'path' => ['required', 'string', 'max:2048'],
             'country' => ['nullable', 'string', 'regex:/^[A-Za-z]{2}$/'],
-            'browser' => ['required', 'string', 'max:100'],
-            'os' => ['required', 'string', 'max:100'],
+            'browser' => ['nullable', 'string', 'max:100'],
+            'os' => ['nullable', 'string', 'max:100'],
             'device' => ['required', Rule::enum(Device::class)],
             'format' => ['required', Rule::enum(Format::class)],
             'referrer' => ['nullable', 'string', 'max:2048'],
@@ -31,8 +31,8 @@ class ProcessedCollectController extends Controller
         ]);
 
         $userAgent = UserAgent::from(
-            browser: $validated['browser'],
-            os: $validated['os'],
+            browser: $validated['browser'] ?? null,
+            os: $validated['os'] ?? null,
             device: $validated['device'],
         );
 
