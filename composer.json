@@ -3,6 +3,12 @@
     "description": "",
     "license": "MIT",
     "type": "project",
+    "authors": [
+        {
+            "name": "Tom Herrmann",
+            "homepage": "https://gummibeer.dev"
+        }
+    ],
     "require": {
         "php": "^8.3",
         "geoip2/geoip2": "^3.4",
