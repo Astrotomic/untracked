@@ -85,7 +85,7 @@ class CollectMetricsTest extends TestCase
 
     public function test_raw_collection_can_reject_bots_before_recording_any_metric(): void
     {
-        $website = $this->website(trackBots: false);
+        $website = $this->website(shouldTrackBots: false);
 
         $this->withHeader('User-Agent', 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)')
             ->postJson(route('collect.raw', $website), ['path' => '/'])
@@ -125,13 +125,13 @@ class CollectMetricsTest extends TestCase
         $this->assertDatabaseCount('daily_metrics', 6);
     }
 
-    private function website(bool $trackBots = true): Website
+    private function website(bool $shouldTrackBots = true): Website
     {
         return Website::query()->create([
             'name' => 'Example',
             'domain' => 'example.com',
             'timezone' => 'UTC',
-            'track_bots' => $trackBots,
+            'should_track_bots' => $shouldTrackBots,
         ]);
     }
 }
