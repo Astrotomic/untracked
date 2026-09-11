@@ -13,10 +13,13 @@
     },
     "require-dev": {
         "fakerphp/faker": "^1.24.1",
+        "larastan/larastan": "^3.12",
         "laravel/pint": "^1.32.1",
         "mockery/mockery": "^1.6.15",
         "nunomaduro/collision": "^8.9.5",
-        "phpunit/phpunit": "^12.5.35"
+        "phpstan/extension-installer": "^1.4",
+        "phpunit/phpunit": "^12.5.35",
+        "spaze/phpstan-disallowed-calls": "^4.14"
     },
     "minimum-stability": "stable",
     "prefer-stable": true,
@@ -35,7 +38,8 @@
     "config": {
         "allow-plugins": {
             "pestphp/pest-plugin": true,
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "phpstan/extension-installer": true
         },
         "optimize-autoloader": true,
         "preferred-install": "dist",
