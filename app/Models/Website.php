@@ -2,26 +2,24 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
+use App\Enums\Metric;
+use App\Values\Dimensions;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
 
-#[Fillable(['name', 'domain', 'timezone', 'should_track_bots'])]
 class Website extends Model
 {
+    use HasUuids;
+
     public $incrementing = false;
 
     protected $keyType = 'string';
 
     protected $primaryKey = 'uuid';
-
-    protected static function booted(): void
-    {
-        static::creating(function (Website $website): void {
-            $website->uuid ??= (string) Str::uuid();
-        });
-    }
 
     protected function casts(): array
     {
@@ -33,5 +31,47 @@ class Website extends Model
     public function dailyMetrics(): HasMany
     {
         return $this->hasMany(DailyMetric::class);
+    }
+
+    public function record(Dimensions $dimensions): void
+    {
+        $date = CarbonImmutable::now($this->timezone)->toDateString();
+
+        $rows = collect(Metric::cases())
+            ->map(function (Metric $metric) use ($date, $dimensions): ?array {
+                $value = $dimensions->value($metric);
+
+                if (empty($value)) {
+                    return null;
+                }
+
+                return [
+                    'website_id' => $this->getKey(),
+                    'date' => $date,
+                    'metric' => $metric->value,
+                    'value' => $value,
+                    'count' => 0,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+
+        DB::transaction(function () use ($rows, $date): void {
+            $this->dailyMetrics()->insertOrIgnore($rows);
+
+            $this->dailyMetrics()
+                ->where('date', $date)
+                ->where(function (Builder $query) use ($rows): void {
+                    foreach ($rows as $row) {
+                        $query->orWhere(function (Builder $query) use ($row): void {
+                            $query
+                                ->where('metric', $row['metric'])
+                                ->where('value', $row['value']);
+                        });
+                    }
+                })
+                ->increment('count');
+        });
     }
 }

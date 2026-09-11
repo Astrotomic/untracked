@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Analytics\Contracts;
+namespace App\Contracts;
 
 interface IpDriver
 {

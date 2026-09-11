@@ -2,17 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Analytics\Dimensions;
-use App\Analytics\Enums\Device;
-use App\Analytics\Enums\Format;
-use App\Analytics\MetricRecorder;
-use App\Analytics\Normalizers\AttributionValueNormalizer;
-use App\Analytics\Normalizers\BrowserNormalizer;
-use App\Analytics\Normalizers\OperatingSystemNormalizer;
-use App\Analytics\Normalizers\ReferrerNormalizer;
-use App\Analytics\PathNormalizer;
 use App\Analytics\WebsiteOriginValidator;
+use App\Enums\Device;
+use App\Enums\Format;
 use App\Models\Website;
+use App\Values\Dimensions;
+use App\Values\UserAgent;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
@@ -23,12 +18,6 @@ class ProcessedCollectController extends Controller
         Request $request,
         Website $website,
         WebsiteOriginValidator $originValidator,
-        PathNormalizer $pathNormalizer,
-        BrowserNormalizer $browsers,
-        OperatingSystemNormalizer $operatingSystems,
-        ReferrerNormalizer $referrers,
-        AttributionValueNormalizer $attributionValues,
-        MetricRecorder $recorder,
     ): Response {
         $originValidator->validate($request, $website);
 
@@ -47,35 +36,29 @@ class ProcessedCollectController extends Controller
             'utm_content' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $device = Device::from($validated['device']);
-        $browser = $browsers->normalize($validated['browser']);
-        $os = $operatingSystems->normalize($validated['os']);
-
-        if ($device === Device::Bot) {
-            $browser = 'Bot';
-            $os = 'Bot';
-        }
-
-        $dimensions = new Dimensions(
-            path: $pathNormalizer->normalize($validated['path']),
-            country: strtoupper($validated['country']),
-            browser: $browser,
-            os: $os,
-            device: $device,
-            format: Format::from($validated['format']),
-            referrer: $referrers->normalize($validated['referrer'] ?? null, $website->domain),
-            utmSource: $attributionValues->normalize($validated['utm_source'] ?? null),
-            utmMedium: $attributionValues->normalize($validated['utm_medium'] ?? null),
-            utmCampaign: $attributionValues->normalize($validated['utm_campaign'] ?? null),
-            utmTerm: $attributionValues->normalize($validated['utm_term'] ?? null),
-            utmContent: $attributionValues->normalize($validated['utm_content'] ?? null),
+        $userAgent = UserAgent::from(
+            browser: $validated['browser'],
+            os: $validated['os'],
+            device: $validated['device'],
         );
 
-        if ($dimensions->isBot() && ! $website->should_track_bots) {
+        if ($userAgent->isBot() && ! $website->should_track_bots) {
             return response()->noContent();
         }
 
-        $recorder->record($website, $dimensions);
+        $website->record(Dimensions::from(
+            path: $validated['path'],
+            country: $validated['country'],
+            userAgent: $userAgent,
+            format: Format::from($validated['format']),
+            referrer: $validated['referrer'] ?? null,
+            utmSource: $validated['utm_source'] ?? null,
+            utmMedium: $validated['utm_medium'] ?? null,
+            utmCampaign: $validated['utm_campaign'] ?? null,
+            utmTerm: $validated['utm_term'] ?? null,
+            utmContent: $validated['utm_content'] ?? null,
+            website: $website,
+        ));
 
         return response()->noContent();
     }

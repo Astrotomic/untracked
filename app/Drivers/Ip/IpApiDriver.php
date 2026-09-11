@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Analytics\Drivers;
+namespace App\Drivers\Ip;
 
-use App\Analytics\Contracts\IpDriver;
+use App\Contracts\IpDriver;
 use Illuminate\Support\Facades\Http;
 use Throwable;
 
-readonly class IpApiDriver implements IpDriver
+final readonly class IpApiDriver implements IpDriver
 {
     public function __construct(
         private string $url,

@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Analytics\Enums\Device;
-use App\Analytics\Enums\Format;
+use App\Enums\Device;
+use App\Enums\Format;
 use App\Models\Website;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;

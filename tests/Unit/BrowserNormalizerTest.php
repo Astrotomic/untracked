@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Analytics\Normalizers\BrowserNormalizer;
+use App\Normalizers\BrowserNormalizer;
 use PHPUnit\Framework\TestCase;
 
 class BrowserNormalizerTest extends TestCase

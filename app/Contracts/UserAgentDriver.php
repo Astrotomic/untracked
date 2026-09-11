@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Analytics\Contracts;
+namespace App\Contracts;
 
-use App\Analytics\UserAgent;
+use App\Values\UserAgent;
 
 interface UserAgentDriver
 {

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Analytics\Drivers;
+namespace App\Drivers\Ip;
 
-use App\Analytics\Contracts\IpDriver;
+use App\Contracts\IpDriver;
 use GeoIp2\Database\Reader;
 use Throwable;
 
-readonly class MaxMindIpDriver implements IpDriver
+final readonly class MaxMindIpDriver implements IpDriver
 {
     public function __construct(private string $database) {}
 

@@ -13,8 +13,6 @@ class DailyMetric extends Model
 
     protected $primaryKey = null;
 
-    protected $guarded = [];
-
     protected function casts(): array
     {
         return [

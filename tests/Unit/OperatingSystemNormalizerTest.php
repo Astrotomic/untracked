@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Analytics\Normalizers\OperatingSystemNormalizer;
+use App\Normalizers\OperatingSystemNormalizer;
 use PHPUnit\Framework\TestCase;
 
 class OperatingSystemNormalizerTest extends TestCase

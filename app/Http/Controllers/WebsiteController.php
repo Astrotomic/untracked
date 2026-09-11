@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Analytics\Metric;
+use App\Enums\Metric;
 use App\Http\Requests\WebsiteRequest;
 use App\Models\DailyMetric;
 use App\Models\Website;

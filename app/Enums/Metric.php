@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Analytics;
+namespace App\Enums;
 
 enum Metric: string
 {

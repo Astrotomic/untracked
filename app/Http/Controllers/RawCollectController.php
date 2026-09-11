@@ -2,16 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Analytics\Dimensions;
-use App\Analytics\Enums\Format;
-use App\Analytics\IpManager;
-use App\Analytics\MetricRecorder;
-use App\Analytics\Normalizers\AttributionValueNormalizer;
-use App\Analytics\Normalizers\ReferrerNormalizer;
-use App\Analytics\PathNormalizer;
-use App\Analytics\UserAgentManager;
 use App\Analytics\WebsiteOriginValidator;
+use App\Enums\Format;
+use App\Managers\IpManager;
+use App\Managers\UserAgentManager;
 use App\Models\Website;
+use App\Values\Dimensions;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -21,12 +17,6 @@ class RawCollectController extends Controller
         Request $request,
         Website $website,
         WebsiteOriginValidator $originValidator,
-        PathNormalizer $pathNormalizer,
-        ReferrerNormalizer $referrers,
-        AttributionValueNormalizer $attributionValues,
-        UserAgentManager $userAgents,
-        IpManager $ips,
-        MetricRecorder $recorder,
     ): Response {
         $originValidator->validate($request, $website);
 
@@ -41,25 +31,24 @@ class RawCollectController extends Controller
             'utm_content' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $userAgent = $userAgents->driver()->resolve((string) $request->userAgent());
+        $userAgent = UserAgentManager::make()->driver()->resolve((string) $request->userAgent());
 
         if ($userAgent->isBot() && ! $website->should_track_bots) {
             return response()->noContent();
         }
 
-        $recorder->record($website, new Dimensions(
-            path: $pathNormalizer->normalize($validated['path']),
-            country: $ips->driver()->country((string) $request->ip()),
-            browser: $userAgent->browser,
-            os: $userAgent->os,
-            device: $userAgent->device,
+        $website->record(Dimensions::from(
+            path: $validated['path'],
+            country: IpManager::make()->driver()->country((string) $request->ip()),
+            userAgent: $userAgent,
             format: Format::normalize((string) ($validated['format'] ?? 'html')),
-            referrer: $referrers->normalize($validated['referrer'] ?? null, $website->domain),
-            utmSource: $attributionValues->normalize($validated['utm_source'] ?? null),
-            utmMedium: $attributionValues->normalize($validated['utm_medium'] ?? null),
-            utmCampaign: $attributionValues->normalize($validated['utm_campaign'] ?? null),
-            utmTerm: $attributionValues->normalize($validated['utm_term'] ?? null),
-            utmContent: $attributionValues->normalize($validated['utm_content'] ?? null),
+            referrer: $validated['referrer'] ?? null,
+            utmSource: $validated['utm_source'] ?? null,
+            utmMedium: $validated['utm_medium'] ?? null,
+            utmCampaign: $validated['utm_campaign'] ?? null,
+            utmTerm: $validated['utm_term'] ?? null,
+            utmContent: $validated['utm_content'] ?? null,
+            website: $website
         ));
 
         return response()->noContent();

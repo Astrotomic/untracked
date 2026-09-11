@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Analytics\Enums;
+namespace App\Enums;
 
 enum Format: string
 {
