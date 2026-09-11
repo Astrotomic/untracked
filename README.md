@@ -29,15 +29,21 @@ count
 One request can increment counters such as:
 
 ```text
-2026-09-11 | path    | /blog/example | +1
-2026-09-11 | country | DE            | +1
-2026-09-11 | browser | Firefox       | +1
-2026-09-11 | os      | Linux         | +1
-2026-09-11 | device  | desktop       | +1
-2026-09-11 | format  | markdown      | +1
+2026-09-11 | path         | /blog/example       | +1
+2026-09-11 | country      | DE                  | +1
+2026-09-11 | browser      | Firefox             | +1
+2026-09-11 | os           | Linux               | +1
+2026-09-11 | device       | desktop             | +1
+2026-09-11 | format       | markdown            | +1
+2026-09-11 | referrer     | news.ycombinator.com| +1
+2026-09-11 | utm_source   | newsletter          | +1
+2026-09-11 | utm_medium   | email               | +1
+2026-09-11 | utm_campaign | launch              | +1
 ```
 
-Those counters are independent. Untracked cannot later answer which German request used Firefox, which device opened a specific page, or whether two requests came from the same person.
+Those counters are independent. Untracked cannot later answer which German request used Firefox, which referrer led to a specific page, which UTM campaign used which browser, or whether two requests came from the same person.
+
+Optional dimensions such as referrer and UTM parameters only create counters when they are present. There are no fake `(direct)` or empty rows.
 
 The analytics table intentionally has no `id`, `created_at` or `updated_at`. Exact request times would make otherwise independent counters correlatable again.
 
@@ -46,8 +52,10 @@ The analytics table intentionally has no `id`, `created_at` or `updated_at`. Exa
 - IP addresses
 - full User-Agent strings
 - exact timestamps
-- query strings
-- referrers
+- full query strings
+- non-UTM query parameters
+- full referrer URLs
+- referrer paths or query strings
 - screen sizes
 - language
 - sessions
@@ -89,7 +97,9 @@ The bundled browser script uses this endpoint:
 <script defer data-website-id="YOUR_WEBSITE_UUID" src="https://analytics.example.com/script.js"></script>
 ```
 
-It sends only the current pathname and `html` format. Browser requests include an `Origin` header, which Untracked checks against the website's configured domain.
+The script sends only the current pathname, `html` format, external referrer hostname and the five standard UTM values when present. It parses `document.referrer` and `window.location.search` in the browser, so the full referrer URL and full page query never leave the page.
+
+Same-site referrers are ignored. Browser requests include an `Origin` header, which Untracked checks against the website's configured domain.
 
 ### Processed collection
 
@@ -106,11 +116,21 @@ Use this from a backend that already reduced the request itself. This endpoint n
   "browser": "Firefox",
   "os": "Linux",
   "device": "desktop",
-  "format": "markdown"
+  "format": "markdown",
+  "referrer": "news.ycombinator.com",
+  "utm_source": "newsletter",
+  "utm_medium": "email",
+  "utm_campaign": "launch",
+  "utm_term": "privacy analytics",
+  "utm_content": "hero-link"
 }
 ```
 
-Paths are reduced to the pathname before storage, so query strings are discarded. If your routes can contain personal or secret values, normalize those paths before sending them. Untracked deliberately does not retain a raw event that could be fixed afterwards.
+Paths are reduced to the pathname before storage, so query strings are discarded. Referrers are reduced to their hostname and same-site referrers are dropped. UTM values are trimmed, control characters are removed and values are bounded to 255 characters.
+
+UTM values are still arbitrary strings chosen by whoever creates the campaign. Do not put email addresses, user IDs or other personal data into them if you want to preserve Untracked's privacy model.
+
+If your routes can contain personal or secret values, normalize those paths before sending them. Untracked deliberately does not retain a raw event that could be fixed afterwards.
 
 ## User-Agent processing
 
