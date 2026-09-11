@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Models\Website;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class WebsiteManagementTest extends TestCase
@@ -39,6 +40,8 @@ class WebsiteManagementTest extends TestCase
 
         $response->assertRedirect(route('websites.show', $website));
         $this->assertNotNull($website->uuid);
+        $this->assertSame($website->uuid, $website->getKey());
+        $this->assertFalse(Schema::hasColumn('websites', 'id'));
         $this->assertTrue($website->should_track_bots);
     }
 }
