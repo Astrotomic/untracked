@@ -19,7 +19,7 @@ class CountryNormalizerTest extends TestCase
     }
 
     #[DataProvider('countryProvider')]
-    public function test_it_removes_platform_and_device_details_from_browser_families(string $value, string $expected): void
+    public function test_it_normalizes_country_values(string $value, ?string $expected): void
     {
         Assert::assertSame($expected, $this->normalizer->normalize(Str::lower($value)));
         Assert::assertSame($expected, $this->normalizer->normalize(Str::upper($value)));
@@ -32,7 +32,7 @@ class CountryNormalizerTest extends TestCase
             ['deu', 'DE'],
             ['276', 'DE'],
             ['germany', 'DE'],
-            ['foobar', 'XX'],
+            ['foobar', null],
         ];
     }
 }
