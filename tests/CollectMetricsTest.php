@@ -47,6 +47,23 @@ class CollectMetricsTest extends TestCase
         $this->assertFalse(Schema::hasColumn('daily_metrics', 'updated_at'));
     }
 
+    public function test_processed_collection_skips_country_when_missing(): void
+    {
+        $website = $this->website();
+
+        $this->postJson(route('collect.processed', $website), [
+            'path' => '/',
+            'country' => null,
+            'browser' => 'Firefox',
+            'os' => 'Linux',
+            'device' => Device::Desktop->value,
+            'format' => Format::Html->value,
+        ])->assertNoContent();
+
+        $this->assertDatabaseCount('daily_metrics', 5);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'country']);
+    }
+
     public function test_processed_collection_stores_attribution_as_independent_optional_counters(): void
     {
         $website = $this->website();
@@ -142,8 +159,9 @@ class CollectMetricsTest extends TestCase
             ])
             ->assertNoContent();
 
-        $this->assertDatabaseCount('daily_metrics', 12);
+        $this->assertDatabaseCount('daily_metrics', 11);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'path', 'value' => '/landing']);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'country']);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'browser', 'value' => 'Firefox']);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'os', 'value' => 'Linux']);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'device', 'value' => Device::Desktop->value]);
@@ -199,7 +217,8 @@ class CollectMetricsTest extends TestCase
             'User-Agent' => 'Mozilla/5.0 Firefox/142.0',
         ])->postJson(route('collect.raw', $website), ['url' => 'https://example.com/'])->assertNoContent();
 
-        $this->assertDatabaseCount('daily_metrics', 6);
+        $this->assertDatabaseCount('daily_metrics', 5);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'country']);
     }
 
     private function website(bool $shouldTrackBots = true): Website
