@@ -167,7 +167,7 @@ class CollectMetricsTest extends TestCase
             ->assertNoContent();
 
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'browser', 'value' => 'Bot']);
-        $this->assertDatabaseHas('daily_metrics', ['metric' => 'os', 'value' => 'Bot']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'os', 'value' => 'Other']);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'device', 'value' => Device::Bot->value]);
     }
 
