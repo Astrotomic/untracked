@@ -8,10 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class MetricRecorder
 {
-    /**
-     * @param array{path: string, country: string, browser: string, os: string, device: string, format: string} $dimensions
-     */
-    public function record(Website $website, array $dimensions): void
+    public function record(Website $website, Dimensions $dimensions): void
     {
         $websiteId = $website->getKey();
         $date = now($website->timezone)->toDateString();
@@ -20,7 +17,7 @@ class MetricRecorder
             'website_id' => $websiteId,
             'date' => $date,
             'metric' => $metric->value,
-            'value' => $dimensions[$metric->value],
+            'value' => $dimensions->value($metric),
             'count' => 0,
         ])->all();
 
