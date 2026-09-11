@@ -38,6 +38,9 @@ final readonly class CountryNormalizer implements Normalizer
             ?? $this->lookup($this->iso3166->exactName(...), $value);
     }
 
+    /**
+     * @return null|array{name: string, alpha2: string, alpha3: string, numeric: numeric-string, currency: string[]}
+     */
     private function lookup(callable $lookup, string $value): ?array
     {
         return rescue(fn () => $lookup($value));

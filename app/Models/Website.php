@@ -28,6 +28,9 @@ class Website extends Model
         ];
     }
 
+    /**
+     * @return HasMany<DailyMetric, $this>
+     */
     public function dailyMetrics(): HasMany
     {
         return $this->hasMany(DailyMetric::class);

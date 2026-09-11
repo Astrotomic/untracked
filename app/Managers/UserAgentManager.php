@@ -5,8 +5,6 @@ namespace App\Managers;
 use App\Concerns\Resolvable;
 use App\Contracts\UserAgentDriver;
 use App\Drivers\UserAgent\UapUserAgentDriver;
-use App\Normalizers\BrowserNormalizer;
-use App\Normalizers\OperatingSystemNormalizer;
 use Illuminate\Support\Manager;
 use UAParser\Parser;
 
@@ -31,10 +29,6 @@ final class UserAgentManager extends Manager
 
     protected function createUapDriver(): UapUserAgentDriver
     {
-        return new UapUserAgentDriver(
-            Parser::create(),
-            $this->container->make(BrowserNormalizer::class),
-            $this->container->make(OperatingSystemNormalizer::class),
-        );
+        return new UapUserAgentDriver(Parser::create());
     }
 }

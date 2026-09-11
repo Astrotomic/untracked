@@ -50,7 +50,7 @@ class WebsiteController extends Controller
             ->get()
             ->groupBy('metric');
 
-        $requests = (int) ($metrics->get(Metric::Path->value)?->sum('count') ?? 0);
+        $requests = (int) $metrics->get(Metric::Path->value)?->sum(fn (DailyMetric $metric) => $metric->count);
 
         return view('websites.show', compact('website', 'metrics', 'days', 'requests'));
     }
