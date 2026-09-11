@@ -4,5 +4,5 @@ namespace App\Contracts;
 
 interface FaviconDriver
 {
-    public function url(string $domain, int $size): string;
+    public function url(string $domain, ?int $size = null): string;
 }
