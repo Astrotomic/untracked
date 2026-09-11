@@ -3,26 +3,26 @@
 namespace App\Values;
 
 use App\Enums\Device;
-use App\Normalizers\BrowserNormalizer;
+use App\Normalizers\ClientNormalizer;
 use App\Normalizers\OperatingSystemNormalizer;
 
 final readonly class UserAgent
 {
-    public static function from(?string $browser, ?string $os, string|Device $device): self
+    public static function from(?string $client, ?string $os, string|Device $device): self
     {
-        $browser = $browser === null ? null : BrowserNormalizer::make()->normalize($browser);
+        $client = $client === null ? null : ClientNormalizer::make()->normalize($client);
         $os = $os === null ? null : OperatingSystemNormalizer::make()->normalize($os);
         $device = is_string($device) ? Device::from($device) : $device;
 
         return new self(
-            browser: $browser,
+            client: $client,
             os: $os,
             device: $device,
         );
     }
 
     public function __construct(
-        public ?string $browser,
+        public ?string $client,
         public ?string $os,
         public Device $device,
     ) {}
