@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Analytics\WebsiteOriginValidator;
 use App\Enums\Format;
 use App\Managers\IpManager;
 use App\Managers\UserAgentManager;
@@ -13,13 +12,8 @@ use Illuminate\Http\Response;
 
 class RawCollectController extends Controller
 {
-    public function __invoke(
-        Request $request,
-        Website $website,
-        WebsiteOriginValidator $originValidator,
-    ): Response {
-        $originValidator->validate($request, $website);
-
+    public function __invoke(Request $request, Website $website): Response
+    {
         $validated = $request->validate([
             'path' => ['required', 'string', 'max:2048'],
             'format' => ['nullable', 'string', 'max:64'],
