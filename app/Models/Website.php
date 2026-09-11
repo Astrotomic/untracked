@@ -10,6 +10,12 @@ use Illuminate\Support\Str;
 #[Fillable(['name', 'domain', 'timezone', 'should_track_bots'])]
 class Website extends Model
 {
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
+    protected $primaryKey = 'uuid';
+
     protected static function booted(): void
     {
         static::creating(function (Website $website): void {
@@ -22,11 +28,6 @@ class Website extends Model
         return [
             'should_track_bots' => 'boolean',
         ];
-    }
-
-    public function getRouteKeyName(): string
-    {
-        return 'uuid';
     }
 
     public function dailyMetrics(): HasMany
