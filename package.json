@@ -16,6 +16,9 @@
         "@laravel/multiplex": "^0.4.1"
     },
     "dependencies": {
+        "chart.js": "^4.5.1",
+        "lucide": "^1.45.0",
+        "svgmap": "^2.21.0",
         "tailwindcss": "^4.0.0"
     }
 }
