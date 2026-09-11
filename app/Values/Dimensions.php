@@ -4,6 +4,8 @@ namespace App\Values;
 
 use App\Enums\Format;
 use App\Enums\Metric;
+use App\Managers\IpManager;
+use App\Managers\UserAgentManager;
 use App\Models\Website;
 use App\Normalizers\CountryNormalizer;
 use App\Normalizers\PathNormalizer;
@@ -12,6 +14,35 @@ use App\Normalizers\ValueNormalizer;
 
 final readonly class Dimensions
 {
+    public static function fromRaw(
+        string $url,
+        string $ip,
+        string $userAgent,
+        ?string $referrer,
+        Website $website,
+    ): self {
+        $query = [];
+        parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+
+        $utm = static fn (string $key): ?string => is_string($query[$key] ?? null)
+            ? $query[$key]
+            : null;
+
+        return self::from(
+            path: $url,
+            country: IpManager::make()->driver()->country($ip),
+            userAgent: UserAgentManager::make()->driver()->resolve($userAgent),
+            format: Format::Html,
+            referrer: $referrer,
+            utmSource: $utm('utm_source'),
+            utmMedium: $utm('utm_medium'),
+            utmCampaign: $utm('utm_campaign'),
+            utmTerm: $utm('utm_term'),
+            utmContent: $utm('utm_content'),
+            website: $website,
+        );
+    }
+
     public static function from(
         string $path,
         string $country,
