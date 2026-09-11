@@ -60,6 +60,7 @@ final readonly class Dimensions
         ?string $utmContent,
         Website $website,
     ): self {
+        $userAgent = self::normalizeUserAgent($userAgent);
         $isBot = $userAgent->isBot();
 
         return new self(
@@ -105,5 +106,24 @@ final readonly class Dimensions
             Metric::UtmTerm => $this->utmTerm,
             Metric::UtmContent => $this->utmContent,
         };
+    }
+
+    private static function normalizeUserAgent(UserAgent $userAgent): UserAgent
+    {
+        if (! $userAgent->isBot()) {
+            return $userAgent;
+        }
+
+        $browser = $userAgent->browser;
+
+        if (empty($browser) || in_array(strtolower($browser), ['bot', 'other'], true)) {
+            $browser = null;
+        }
+
+        return new UserAgent(
+            browser: $browser,
+            os: null,
+            device: $userAgent->device,
+        );
     }
 }
