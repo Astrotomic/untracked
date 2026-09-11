@@ -5,10 +5,10 @@ namespace App\Models;
 use App\Enums\Metric;
 use App\Values\Dimensions;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 class Website extends Model
