@@ -33,7 +33,7 @@ class RawCollectController extends Controller
 
         $userAgent = $userAgents->driver()->resolve((string) $request->userAgent());
 
-        if ($userAgent->isBot() && ! $website->track_bots) {
+        if ($userAgent->isBot() && ! $website->should_track_bots) {
             return response()->noContent();
         }
 
