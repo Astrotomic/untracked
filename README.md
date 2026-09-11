@@ -43,7 +43,7 @@ One request can increment counters such as:
 
 Those counters are independent. Untracked cannot later answer which German request used Firefox, which referrer led to a specific page, which UTM campaign used which browser, or whether two requests came from the same person.
 
-Optional dimensions such as referrer and UTM parameters only create counters when they are present. There are no fake `(direct)` or empty rows.
+Optional dimensions such as country, referrer and UTM parameters only create counters when they are present. There are no magic fallback or empty rows.
 
 The analytics table intentionally has no `id`, `created_at` or `updated_at`. Exact request times would make otherwise independent counters correlatable again.
 
@@ -109,7 +109,7 @@ Same-site referrers are ignored during normalization. Browser requests include a
 POST /api/websites/{uuid}/collect/processed
 ```
 
-Use this from a backend that already reduced the request itself. This endpoint never reads the request IP or User-Agent for analytics. Browser and OS values run through the same semantic normalizers as raw UAP data; device and format stay small backed enums.
+Use this from a backend that already reduced the request itself. This endpoint never reads the request IP or User-Agent for analytics. Browser and OS values run through the same semantic normalizers as raw UAP data; device and format stay small backed enums. Country is optional; if it is missing or cannot be normalized, no country metric is stored.
 
 ```json
 {
@@ -172,7 +172,7 @@ ANALYTICS_IP_DRIVER=maxmind
 ANALYTICS_MAXMIND_DATABASE=/absolute/path/to/GeoLite2-Country.mmdb
 ```
 
-This uses the local MaxMind GeoLite2/GeoIP2 database through `geoip2/geoip2`. The IP never leaves your server. If the database is missing or the address cannot be resolved, country becomes `XX`.
+This uses the local MaxMind GeoLite2/GeoIP2 database through `geoip2/geoip2`. The IP never leaves your server. If the database is missing or the address cannot be resolved, country is `null` and no country metric is stored.
 
 This is the privacy-first production setup.
 
