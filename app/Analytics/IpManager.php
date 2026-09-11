@@ -4,7 +4,6 @@ namespace App\Analytics;
 
 use App\Analytics\Drivers\IpApiDriver;
 use App\Analytics\Drivers\MaxMindIpDriver;
-use GeoIp2\Database\Reader;
 use Illuminate\Support\Manager;
 
 class IpManager extends Manager
