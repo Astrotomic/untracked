@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Analytics\Dimensions;
-use App\Analytics\Enums\Browser;
 use App\Analytics\Enums\Device;
 use App\Analytics\Enums\Format;
-use App\Analytics\Enums\OperatingSystem;
 use App\Analytics\MetricRecorder;
+use App\Analytics\Normalizers\BrowserNormalizer;
+use App\Analytics\Normalizers\OperatingSystemNormalizer;
 use App\Analytics\PathNormalizer;
 use App\Analytics\WebsiteOriginValidator;
 use App\Models\Website;
@@ -22,6 +22,8 @@ class ProcessedCollectController extends Controller
         Website $website,
         WebsiteOriginValidator $originValidator,
         PathNormalizer $pathNormalizer,
+        BrowserNormalizer $browsers,
+        OperatingSystemNormalizer $operatingSystems,
         MetricRecorder $recorder,
     ): Response {
         $originValidator->validate($request, $website);
@@ -29,18 +31,27 @@ class ProcessedCollectController extends Controller
         $validated = $request->validate([
             'path' => ['required', 'string', 'max:2048'],
             'country' => ['required', 'string', 'regex:/^[A-Za-z]{2}$/'],
-            'browser' => ['required', Rule::enum(Browser::class)],
-            'os' => ['required', Rule::enum(OperatingSystem::class)],
+            'browser' => ['required', 'string', 'max:100'],
+            'os' => ['required', 'string', 'max:100'],
             'device' => ['required', Rule::enum(Device::class)],
             'format' => ['required', Rule::enum(Format::class)],
         ]);
 
+        $device = Device::from($validated['device']);
+        $browser = $browsers->normalize($validated['browser']);
+        $os = $operatingSystems->normalize($validated['os']);
+
+        if ($device === Device::Bot) {
+            $browser = 'Bot';
+            $os = 'Bot';
+        }
+
         $dimensions = new Dimensions(
             path: $pathNormalizer->normalize($validated['path']),
             country: strtoupper($validated['country']),
-            browser: Browser::from($validated['browser']),
-            os: OperatingSystem::from($validated['os']),
-            device: Device::from($validated['device']),
+            browser: $browser,
+            os: $os,
+            device: $device,
             format: Format::from($validated['format']),
         );
 
