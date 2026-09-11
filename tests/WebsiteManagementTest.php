@@ -2,6 +2,9 @@
 
 namespace Tests;
 
+use App\Enums\Device;
+use App\Enums\Metric;
+use App\Models\DailyMetric;
 use App\Models\User;
 use App\Models\Website;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -36,9 +39,30 @@ class WebsiteManagementTest extends TestCase
             'should_track_bots' => true,
         ]);
 
+        $date = now($website->timezone)->toDateString();
+
+        DailyMetric::query()->insert([
+            [
+                'website_uuid' => $website->getKey(),
+                'date' => $date,
+                'metric' => Metric::Path->value,
+                'value' => '/',
+                'count' => 10,
+            ],
+            [
+                'website_uuid' => $website->getKey(),
+                'date' => $date,
+                'metric' => Metric::Device->value,
+                'value' => Device::Bot->value,
+                'count' => 3,
+            ],
+        ]);
+
         $this->get(route('websites.show', $website))
             ->assertOk()
             ->assertSee('Requests over time')
+            ->assertSee('"human":7', false)
+            ->assertSee('"bot":3', false)
             ->assertSee('requests-chart', false)
             ->assertSee('country-map', false)
             ->assertSee('analytics-dashboard-data', false);
