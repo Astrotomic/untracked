@@ -14,7 +14,7 @@ final readonly class BrowserNormalizer implements Normalizer
     {
         $value = trim((string) $value);
 
-        if (empty($value) || strcasecmp($value, 'other') === 0) {
+        if (empty($value) || Str::equals($value, 'other')) {
             return 'Other';
         }
 

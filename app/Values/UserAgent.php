@@ -5,6 +5,7 @@ namespace App\Values;
 use App\Enums\Device;
 use App\Normalizers\BrowserNormalizer;
 use App\Normalizers\OperatingSystemNormalizer;
+use Illuminate\Support\Str;
 
 final readonly class UserAgent
 {
@@ -29,8 +30,8 @@ final readonly class UserAgent
 
     public function isBot(): bool
     {
-        return strcasecmp($this->browser, 'bot') === 0
-            || strcasecmp($this->os, 'bot') === 0
+        return Str::equals($this->browser, 'bot')
+            || Str::equals($this->os, 'bot')
             || $this->device === Device::Bot;
     }
 }
