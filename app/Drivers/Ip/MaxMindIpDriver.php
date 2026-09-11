@@ -3,6 +3,7 @@
 namespace App\Drivers\Ip;
 
 use App\Contracts\IpDriver;
+use App\Normalizers\CountryNormalizer;
 use GeoIp2\Database\Reader;
 use Throwable;
 
@@ -18,21 +19,10 @@ final readonly class MaxMindIpDriver implements IpDriver
 
         try {
             $country = (new Reader($this->database))->country($ip)->country->isoCode;
+
+            return CountryNormalizer::make()->normalize($country);
         } catch (Throwable) {
             return null;
         }
-
-        return $this->normalize($country);
-    }
-
-    private function normalize(?string $country): ?string
-    {
-        if ($country === null) {
-            return null;
-        }
-
-        $country = strtoupper($country);
-
-        return preg_match('/^[A-Z]{2}$/', $country) === 1 ? $country : null;
     }
 }

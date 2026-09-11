@@ -3,6 +3,7 @@
 namespace App\Drivers\Ip;
 
 use App\Contracts\IpDriver;
+use App\Normalizers\CountryNormalizer;
 use Illuminate\Support\Facades\Http;
 use Throwable;
 
@@ -22,15 +23,13 @@ final readonly class IpApiDriver implements IpDriver
                     'fields' => 'status,countryCode',
                 ]);
 
-            if (! $response->successful() || $response->json('status') !== 'success') {
+            if ($response->failed() || $response->json('status') !== 'success') {
                 return null;
             }
 
-            $country = strtoupper((string) $response->json('countryCode'));
+            return CountryNormalizer::make()->normalize($response->json('countryCode'));
         } catch (Throwable) {
             return null;
         }
-
-        return preg_match('/^[A-Z]{2}$/', $country) === 1 ? $country : null;
     }
 }
