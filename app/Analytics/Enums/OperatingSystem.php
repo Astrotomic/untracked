@@ -11,7 +11,6 @@ enum OperatingSystem: string
     case IOS = 'iOS';
     case ChromeOS = 'ChromeOS';
     case Bot = 'Bot';
-    case Unknown = 'Unknown';
     case Other = 'Other';
 
     public static function normalize(string $family): self
@@ -19,7 +18,6 @@ enum OperatingSystem: string
         $family = strtolower(trim($family));
 
         return match (true) {
-            $family === '', $family === 'other' => self::Unknown,
             str_contains($family, 'windows') => self::Windows,
             str_contains($family, 'mac os'), str_contains($family, 'macos'), str_contains($family, 'os x') => self::MacOS,
             str_contains($family, 'android') => self::Android,
