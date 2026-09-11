@@ -3,7 +3,7 @@
         <div>
             <a href="{{ route('websites.index') }}" class="text-sm text-zinc-500 hover:text-zinc-300">← Websites</a>
             <h1 class="mt-4 text-3xl font-semibold tracking-tight">{{ $website->name }}</h1>
-            <p class="mt-1 text-zinc-500">{{ $website->domain }} · {{ $website->timezone }} · {{ $website->track_bots ? 'bots included' : 'bots rejected' }}</p>
+            <p class="mt-1 text-zinc-500">{{ $website->domain }} · {{ $website->timezone }} · {{ $website->should_track_bots ? 'bots included' : 'bots rejected' }}</p>
         </div>
         <a href="{{ route('websites.edit', $website) }}" class="rounded-lg border border-zinc-700 px-4 py-2 text-sm hover:border-zinc-500">Settings</a>
     </div>
