@@ -4,5 +4,5 @@ namespace App\Contracts;
 
 interface IpDriver
 {
-    public function country(string $ip): string;
+    public function country(string $ip): ?string;
 }
