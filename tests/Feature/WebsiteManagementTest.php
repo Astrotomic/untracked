@@ -32,13 +32,13 @@ class WebsiteManagementTest extends TestCase
             'name' => 'gummibeer.dev',
             'domain' => 'gummibeer.dev',
             'timezone' => 'Europe/Berlin',
-            'track_bots' => '1',
+            'should_track_bots' => '1',
         ]);
 
         $website = Website::query()->sole();
 
         $response->assertRedirect(route('websites.show', $website));
         $this->assertNotNull($website->uuid);
-        $this->assertTrue($website->track_bots);
+        $this->assertTrue($website->should_track_bots);
     }
 }
