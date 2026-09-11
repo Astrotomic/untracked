@@ -23,6 +23,10 @@
 
         $countries = $metrics->get('country') ?? collect();
         $countryTotal = max(1, (int) $countries->sum('count'));
+        $countryFlag = static fn (string $country): string => collect(str_split(strtoupper($country)))
+            ->map(fn (string $character): string => \IntlChar::chr(127397 + ord($character)))
+            ->implode('');
+        $countryName = static fn (string $country): string => \Locale::getDisplayRegion('und_'.strtoupper($country), 'en') ?: strtoupper($country);
     @endphp
 
     <div class="flex flex-wrap items-start justify-between gap-6">
@@ -97,8 +101,11 @@
                     @php($percentage = ($row->count / $countryTotal) * 100)
                     <div>
                         <div class="mb-1.5 flex items-center justify-between gap-4 text-sm">
-                            <span class="font-medium text-zinc-300">{{ $row->value }}</span>
-                            <span class="tabular-nums text-zinc-500">{{ number_format($row->count) }} · {{ number_format($percentage, 1) }}%</span>
+                            <span class="flex min-w-0 items-center gap-2.5 font-medium text-zinc-300">
+                                <span class="text-base leading-none">{{ $countryFlag($row->value) }}</span>
+                                <span class="truncate" title="{{ $row->value }}">{{ $countryName($row->value) }}</span>
+                            </span>
+                            <span class="shrink-0 tabular-nums text-zinc-500">{{ number_format($row->count) }} · {{ number_format($percentage, 1) }}%</span>
                         </div>
                         <div class="h-1.5 overflow-hidden rounded-full bg-zinc-800">
                             <div class="h-full rounded-full bg-zinc-300" style="width: {{ min(100, $percentage) }}%"></div>
@@ -128,11 +135,23 @@
 
                 <div class="mt-5 space-y-2.5">
                     @forelse ($rows->take(8) as $row)
-                        @php($percentage = ($row->count / $total) * 100)
+                        @php
+                            $percentage = ($row->count / $total) * 100;
+                            $iconUrl = match ($metric) {
+                                'client' => $clientFavicons[$row->value] ?? null,
+                                'referrer' => $referrerFavicons[$row->value] ?? null,
+                                default => null,
+                            };
+                        @endphp
                         <div class="relative overflow-hidden rounded-lg bg-zinc-950/50">
                             <div class="absolute inset-y-0 left-0 bg-zinc-800/60" style="width: {{ min(100, $percentage) }}%"></div>
                             <div class="relative flex items-center justify-between gap-4 px-3 py-2.5 text-sm">
-                                <span class="min-w-0 truncate text-zinc-300" title="{{ $row->value }}">{{ $row->value }}</span>
+                                <span class="flex min-w-0 items-center gap-2.5 text-zinc-300" title="{{ $row->value }}">
+                                    @if ($iconUrl)
+                                        <img src="{{ $iconUrl }}" alt="" class="size-4 shrink-0 rounded-sm" loading="lazy" referrerpolicy="no-referrer">
+                                    @endif
+                                    <span class="truncate">{{ $row->value }}</span>
+                                </span>
                                 <span class="shrink-0 tabular-nums text-zinc-500">{{ number_format($row->count) }} <span class="text-zinc-700">·</span> {{ number_format($percentage, 1) }}%</span>
                             </div>
                         </div>
