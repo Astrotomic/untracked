@@ -57,7 +57,7 @@
 
     <section class="mt-8 rounded-xl border border-zinc-800 p-6">
         <h2 class="font-medium">Browser collection</h2>
-        <p class="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">The script derives browser, OS and device from the request in memory. It sends only the pathname, external referrer hostname and standard UTM values; full referrer URLs and full query strings never leave the page.</p>
+        <p class="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">The script only sends the full page URL and referrer. Untracked combines those with the request IP and User-Agent, derives all analytics dimensions in memory and only persists the reduced daily counters.</p>
 
         <pre class="mt-4 overflow-x-auto rounded-lg bg-black/40 p-4 text-sm text-zinc-300"><code>&lt;script defer data-website-id="{{ $website->uuid }}" src="{{ url('/script.js') }}"&gt;&lt;/script&gt;</code></pre>
     </section>
