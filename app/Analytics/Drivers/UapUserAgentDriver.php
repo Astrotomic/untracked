@@ -3,15 +3,19 @@
 namespace App\Analytics\Drivers;
 
 use App\Analytics\Contracts\UserAgentDriver;
-use App\Analytics\Enums\Browser;
 use App\Analytics\Enums\Device;
-use App\Analytics\Enums\OperatingSystem;
+use App\Analytics\Normalizers\BrowserNormalizer;
+use App\Analytics\Normalizers\OperatingSystemNormalizer;
 use App\Analytics\UserAgent;
 use UAParser\Parser;
 
 readonly class UapUserAgentDriver implements UserAgentDriver
 {
-    public function __construct(private Parser $parser) {}
+    public function __construct(
+        private Parser $parser,
+        private BrowserNormalizer $browsers,
+        private OperatingSystemNormalizer $operatingSystems,
+    ) {}
 
     public function resolve(string $userAgent): UserAgent
     {
@@ -21,13 +25,13 @@ readonly class UapUserAgentDriver implements UserAgentDriver
         $deviceFamily = (string) $result->device->family;
 
         if ($this->isBot($userAgent, $browserFamily, $deviceFamily)) {
-            return new UserAgent(Browser::Bot, OperatingSystem::Bot, Device::Bot);
+            return new UserAgent('Bot', 'Bot', Device::Bot);
         }
 
-        $os = OperatingSystem::normalize($osFamily);
+        $os = $this->operatingSystems->normalize($osFamily);
 
         return new UserAgent(
-            Browser::normalize($browserFamily),
+            $this->browsers->normalize($browserFamily),
             $os,
             Device::normalize($deviceFamily, $os, $userAgent),
         );
