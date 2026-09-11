@@ -81,7 +81,7 @@ Untracked deliberately separates requests that still contain raw client informat
 POST /api/websites/{uuid}/collect/raw
 ```
 
-The raw collector reads the request IP and User-Agent, resolves them in memory, converts the result to the coarse analytics enums and immediately forgets the raw values. Only the independent daily counters are persisted.
+The raw collector reads the request IP and User-Agent, resolves them in memory, reduces them to coarse analytics dimensions and immediately forgets the raw values. Only the independent daily counters are persisted.
 
 The bundled browser script uses this endpoint:
 
@@ -97,7 +97,7 @@ It sends only the current pathname and `html` format. Browser requests include a
 POST /api/websites/{uuid}/collect/processed
 ```
 
-Use this from a backend that already reduced the request itself. This endpoint never reads the request IP or User-Agent for analytics. Browser, OS, device and format are validated against Untracked's backed enums, so detailed versions or arbitrary strings cannot accidentally enter the analytics database.
+Use this from a backend that already reduced the request itself. This endpoint never reads the request IP or User-Agent for analytics. Browser and OS values run through the same semantic normalizers as raw UAP data; device and format stay small backed enums.
 
 ```json
 {
@@ -120,7 +120,24 @@ User-Agent processing uses a Laravel manager/driver setup. The default `uap` dri
 ANALYTICS_USER_AGENT_DRIVER=uap
 ```
 
-The parser's detailed result only exists in memory. Browser, OS and device normalization belongs to the corresponding enums and only their coarse values reach `daily_metrics`.
+UAP already separates each browser and operating-system `family` from its major/minor/patch version fields. Untracked only reads the family fields and ignores all version fields.
+
+Browser and operating-system families are intentionally not enums because UAP's family catalogue is data-driven and can grow. Instead, semantic normalizers remove information that belongs to another dimension or is unnecessarily specific:
+
+```text
+Firefox iOS                  -> Firefox
+Chrome Mobile iOS            -> Chrome
+Chrome Mobile WebView        -> Chrome WebView
+Mobile Safari UI/WKWebView   -> Safari WebView
+Edge Mobile                  -> Edge
+Windows XP                   -> Windows
+Windows Server 2003          -> Windows
+Mac OS X                     -> macOS
+Ubuntu / Debian / Fedora     -> Linux
+Chrome OS                    -> ChromeOS
+```
+
+Unknown future UAP families are kept as their family name rather than silently becoming `Other`. Device remains intentionally coarse: `desktop`, `mobile`, `tablet`, `bot` or `other`. Laptop-sized devices are folded into `desktop`; Untracked does not collect screen dimensions to split them further.
 
 ## IP processing
 
@@ -150,9 +167,9 @@ This is convenient for quick testing because it needs no local database, but it 
 
 Bot collection is configured per website.
 
-When disabled, detected bot requests are discarded before any counter is incremented. When enabled, bots are aggressively coarsened to `Bot` / `bot` browser, OS and device enum values rather than preserving individual crawler identities.
+When disabled, detected bot requests are discarded before any counter is incremented. When enabled, bots are aggressively coarsened to `Bot` / `bot` browser, OS and device values rather than preserving individual crawler identities.
 
-Processed integrations represent bots with the same enum values; there is no separate visitor or bot identity.
+Processed integrations represent bots with the same coarse values; there is no separate visitor or bot identity.
 
 ## Privacy model
 
