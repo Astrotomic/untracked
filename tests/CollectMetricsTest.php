@@ -128,20 +128,34 @@ class CollectMetricsTest extends TestCase
         $this->assertDatabaseCount('daily_metrics', 0);
     }
 
-    public function test_raw_collection_parses_the_user_agent_internally(): void
+    public function test_raw_collection_derives_dimensions_from_url_ip_user_agent_and_referrer(): void
     {
         $website = $this->website();
 
+        $url = 'https://example.com/landing?utm_source=newsletter&utm_medium=email&utm_campaign=launch&utm_term=privacy%20analytics&utm_content=hero-link&secret=discarded';
+        $referrer = 'https://www.google.com/search?q=private';
+
         $this->withHeader('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64; rv:142.0) Gecko/20100101 Firefox/142.0')
             ->postJson(route('collect.raw', $website), [
-                'path' => '/',
-                'format' => 'html',
+                'url' => $url,
+                'referrer' => $referrer,
             ])
             ->assertNoContent();
 
+        $this->assertDatabaseCount('daily_metrics', 12);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'path', 'value' => '/landing']);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'browser', 'value' => 'Firefox']);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'os', 'value' => 'Linux']);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'device', 'value' => Device::Desktop->value]);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'format', 'value' => Format::Html->value]);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'referrer', 'value' => 'google.com']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'utm_source', 'value' => 'newsletter']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'utm_medium', 'value' => 'email']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'utm_campaign', 'value' => 'launch']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'utm_term', 'value' => 'privacy analytics']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'utm_content', 'value' => 'hero-link']);
+        $this->assertDatabaseMissing('daily_metrics', ['value' => $url]);
+        $this->assertDatabaseMissing('daily_metrics', ['value' => $referrer]);
         $this->assertFalse(Schema::hasColumn('daily_metrics', 'ip'));
         $this->assertFalse(Schema::hasColumn('daily_metrics', 'user_agent'));
     }
@@ -151,7 +165,7 @@ class CollectMetricsTest extends TestCase
         $website = $this->website(shouldTrackBots: false);
 
         $this->withHeader('User-Agent', 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)')
-            ->postJson(route('collect.raw', $website), ['path' => '/'])
+            ->postJson(route('collect.raw', $website), ['url' => 'https://example.com/'])
             ->assertNoContent();
 
         $this->assertDatabaseCount('daily_metrics', 0);
@@ -162,7 +176,7 @@ class CollectMetricsTest extends TestCase
         $website = $this->website();
 
         $this->withHeader('User-Agent', 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)')
-            ->postJson(route('collect.raw', $website), ['path' => '/'])
+            ->postJson(route('collect.raw', $website), ['url' => 'https://example.com/'])
             ->assertNoContent();
 
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'browser', 'value' => 'Bot']);
@@ -175,7 +189,7 @@ class CollectMetricsTest extends TestCase
         $website = $this->website();
 
         $this->withHeader('Origin', 'https://evil.example')
-            ->postJson(route('collect.raw', $website), ['path' => '/'])
+            ->postJson(route('collect.raw', $website), ['url' => 'https://example.com/'])
             ->assertForbidden();
 
         $this->assertDatabaseCount('daily_metrics', 0);
@@ -183,7 +197,7 @@ class CollectMetricsTest extends TestCase
         $this->withHeaders([
             'Origin' => 'https://example.com',
             'User-Agent' => 'Mozilla/5.0 Firefox/142.0',
-        ])->postJson(route('collect.raw', $website), ['path' => '/'])->assertNoContent();
+        ])->postJson(route('collect.raw', $website), ['url' => 'https://example.com/'])->assertNoContent();
 
         $this->assertDatabaseCount('daily_metrics', 6);
     }
