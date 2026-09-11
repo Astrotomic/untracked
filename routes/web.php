@@ -1,8 +1,11 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\TestController;
 use App\Http\Controllers\WebsiteController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/test', TestController::class)->name('test');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
