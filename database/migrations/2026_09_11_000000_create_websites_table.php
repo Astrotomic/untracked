@@ -9,8 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('websites', function (Blueprint $table): void {
-            $table->id();
-            $table->uuid('uuid')->unique();
+            $table->uuid('uuid')->primary();
             $table->string('name');
             $table->string('domain')->unique();
             $table->string('timezone')->default('UTC');
