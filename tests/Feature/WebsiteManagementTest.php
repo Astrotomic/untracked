@@ -16,6 +16,14 @@ class WebsiteManagementTest extends TestCase
         $this->get('/websites')->assertRedirect(route('login'));
     }
 
+    public function test_authenticated_users_can_open_the_dashboard(): void
+    {
+        $this->withoutVite();
+        $this->actingAs(User::factory()->create());
+
+        $this->get('/websites')->assertOk();
+    }
+
     public function test_authenticated_users_can_create_websites(): void
     {
         $this->actingAs(User::factory()->create());
