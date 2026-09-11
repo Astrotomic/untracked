@@ -53,14 +53,13 @@ class WebsiteController extends Controller
             ->get()
             ->groupBy('metric');
 
-        /** @var Collection<string, DailyMetric> $dailyRequests */
+        /** @var Collection<string, int|string> $dailyRequests */
         $dailyRequests = (clone $query)
             ->where('metric', Metric::Path->value)
-            ->selectRaw('date, SUM(count) as count')
+            ->selectRaw('date, SUM(count) as total')
             ->groupBy('date')
             ->orderBy('date')
-            ->get()
-            ->keyBy(fn (DailyMetric $metric): string => $metric->date->toDateString());
+            ->pluck('total', 'date');
 
         $trend = collect(range(0, $days - 1))
             ->map(function (int $offset) use ($dailyRequests, $from): array {
@@ -69,14 +68,17 @@ class WebsiteController extends Controller
                 return [
                     'date' => $date->toDateString(),
                     'label' => $date->format('M j'),
-                    'count' => (int) ($dailyRequests->get($date->toDateString())?->count ?? 0),
+                    'count' => (int) $dailyRequests->get($date->toDateString(), 0),
                 ];
             });
 
         $requests = (int) $metrics->get(Metric::Path->value)?->sum(fn (DailyMetric $metric) => $metric->count);
         $pathCount = $metrics->get(Metric::Path->value)?->count() ?? 0;
         $countryCount = $metrics->get(Metric::Country->value)?->count() ?? 0;
-        $botRequests = (int) ($metrics->get(Metric::Device->value)?->firstWhere('value', 'bot')?->count ?? 0);
+        $deviceMetrics = $metrics->get(Metric::Device->value) ?? collect();
+        $botRequests = (int) $deviceMetrics
+            ->where('value', 'bot')
+            ->sum(fn (DailyMetric $metric) => $metric->count);
 
         $countryValues = $metrics->get(Metric::Country->value)
             ?->mapWithKeys(fn (DailyMetric $metric): array => [
