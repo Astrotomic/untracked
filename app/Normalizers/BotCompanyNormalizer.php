@@ -19,7 +19,7 @@ final readonly class BotCompanyNormalizer implements Normalizer
         return match (true) {
             Str::contains($value, ['openai.com', 'gptbot', 'chatgpt-user', 'oai-searchbot', 'oai-adsbot'], true) => 'OpenAI',
             Str::contains($value, ['anthropic.com', 'claudebot', 'claude-user', 'claude-searchbot'], true) => 'Anthropic',
-            Str::contains($value, ['googlebot', 'google-extended', 'googleother', 'google-inspectiontool', 'adsbot-google', 'mediapartners-google'], true) => 'Google',
+            Str::contains($value, ['googlebot', 'google-extended', 'googleother', 'google-inspectiontool', 'adsbot-google', 'mediapartners-google', 'google-agent', 'google-gemininotebook', 'google-notebooklm'], true) => 'Google',
             Str::contains($value, ['bingbot', 'bingpreview', 'adidxbot'], true) => 'Microsoft',
             Str::contains($value, ['applebot'], true) => 'Apple',
             Str::contains($value, ['meta-externalagent', 'facebookexternalhit', 'facebookcatalog'], true) => 'Meta',
