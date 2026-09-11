@@ -8,7 +8,6 @@ enum Device: string
     case Mobile = 'mobile';
     case Tablet = 'tablet';
     case Bot = 'bot';
-    case Unknown = 'unknown';
     case Other = 'other';
 
     public static function normalize(string $family, OperatingSystem $os, string $userAgent = ''): self
@@ -22,7 +21,7 @@ enum Device: string
             str_contains($family, 'iphone'), str_contains($family, 'ipod'), str_contains($userAgent, 'mobile') => self::Mobile,
             $os === OperatingSystem::IOS => self::Mobile,
             $os === OperatingSystem::Android && $family !== 'other' && $family !== '' => self::Mobile,
-            $family === '', $family === 'other' => self::Desktop,
+            in_array($os, [OperatingSystem::Windows, OperatingSystem::MacOS, OperatingSystem::Linux, OperatingSystem::ChromeOS], true) => self::Desktop,
             default => self::Other,
         };
     }
