@@ -102,4 +102,26 @@ class CollectMetricsTest extends TestCase
         $this->assertFalse(Schema::hasColumn('daily_metrics', 'ip'));
         $this->assertFalse(Schema::hasColumn('daily_metrics', 'user_agent'));
     }
+
+    public function test_browser_collection_must_come_from_the_configured_domain(): void
+    {
+        $website = Website::query()->create([
+            'name' => 'Example',
+            'domain' => 'example.com',
+            'timezone' => 'UTC',
+            'track_bots' => true,
+        ]);
+
+        $this->withHeader('Origin', 'https://evil.example')
+            ->postJson(route('collect', $website), ['path' => '/'])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('daily_metrics', 0);
+
+        $this->withHeader('Origin', 'https://example.com')
+            ->postJson(route('collect', $website), ['path' => '/'])
+            ->assertNoContent();
+
+        $this->assertDatabaseCount('daily_metrics', 6);
+    }
 }

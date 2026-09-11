@@ -73,23 +73,25 @@ php artisan user:create
 
 Then run the app normally and log in with the user you created.
 
-## Collecting a request
+## Browser collection
+
+Add the tracker to a site configured in Untracked:
+
+```html
+<script defer data-website-id="YOUR_WEBSITE_UUID" src="https://analytics.example.com/script.js"></script>
+```
+
+The script sends only the current pathname and the `html` format. Untracked derives coarse browser, OS and device families from the request User-Agent in memory. Country can be read from coarse infrastructure headers such as Cloudflare's `CF-IPCountry`. No IP geolocation is performed by Untracked itself.
+
+Browser requests include an `Origin` header. Untracked checks that hostname against the website's configured domain before counting the request.
+
+## Server-side collection
 
 Each website gets a public UUID. Send a `POST` request to:
 
 ```text
 /api/websites/{uuid}/collect
 ```
-
-The only required property is the path:
-
-```json
-{
-  "path": "/blog/example"
-}
-```
-
-For frontend collection, Untracked can derive coarse browser, OS and device families from the request User-Agent in memory. Country can be read from coarse infrastructure headers such as Cloudflare's `CF-IPCountry`. No IP geolocation is performed by Untracked itself.
 
 For server-side collection, send already normalized values and keep raw IP/User-Agent data on the source server:
 
@@ -104,6 +106,8 @@ For server-side collection, send already normalized values and keep raw IP/User-
 }
 ```
 
+Only `path` is required. Originless requests are accepted for backend integrations.
+
 Paths are reduced to the pathname before storage, so query strings are discarded.
 
 If your routes can contain personal or secret values, normalize those paths before sending them. Untracked deliberately does not retain a raw event that could be fixed afterwards.
@@ -113,6 +117,8 @@ If your routes can contain personal or secret values, normalize those paths befo
 Bot collection is configured per website.
 
 When disabled, detected bot requests are discarded before any counter is incremented. When enabled, bots are aggressively coarsened to `Bot` / `bot` browser, OS and device values rather than preserving individual crawler identities.
+
+For server-side collection, pass `"bot": true` or `"device": "bot"` when the source application already classified the request as a bot.
 
 ## Privacy model
 

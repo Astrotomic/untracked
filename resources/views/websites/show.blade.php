@@ -50,8 +50,15 @@
     </div>
 
     <section class="mt-8 rounded-xl border border-zinc-800 p-6">
-        <h2 class="font-medium">Collect</h2>
-        <p class="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">Send only the coarse values you actually want to keep. If browser, OS and device are omitted, Untracked derives them from the request User-Agent in memory and never stores the raw value.</p>
+        <h2 class="font-medium">Browser collection</h2>
+        <p class="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">The script derives browser, OS and device from the request in memory. Raw IP addresses and User-Agent strings are never written to analytics storage.</p>
+
+        <pre class="mt-4 overflow-x-auto rounded-lg bg-black/40 p-4 text-sm text-zinc-300"><code>&lt;script defer data-website-id="{{ $website->uuid }}" src="{{ url('/script.js') }}"&gt;&lt;/script&gt;</code></pre>
+    </section>
+
+    <section class="mt-6 rounded-xl border border-zinc-800 p-6">
+        <h2 class="font-medium">Server-side collection</h2>
+        <p class="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">Send only the coarse values you actually want to keep. This lets the analytics server avoid receiving the visitor's raw IP or User-Agent at all.</p>
 
         <pre class="mt-4 overflow-x-auto rounded-lg bg-black/40 p-4 text-sm text-zinc-300"><code>POST {{ route('collect', $website) }}
 

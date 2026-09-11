@@ -7,6 +7,7 @@ use App\Analytics\RequestNormalizer;
 use App\Models\Website;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Str;
 
 class CollectController extends Controller
 {
@@ -16,6 +17,8 @@ class CollectController extends Controller
         RequestNormalizer $normalizer,
         MetricRecorder $recorder,
     ): Response {
+        $this->validateOrigin($request, $website);
+
         $request->validate([
             'path' => ['required', 'string', 'max:2048'],
             'country' => ['nullable', 'string', 'max:2'],
@@ -37,5 +40,21 @@ class CollectController extends Controller
         $recorder->record($website, $dimensions);
 
         return response()->noContent();
+    }
+
+    private function validateOrigin(Request $request, Website $website): void
+    {
+        $origin = $request->header('Origin');
+
+        if (! $origin) {
+            return;
+        }
+
+        $host = parse_url($origin, PHP_URL_HOST);
+
+        abort_unless(
+            is_string($host) && hash_equals(Str::lower($website->domain), Str::lower($host)),
+            Response::HTTP_FORBIDDEN,
+        );
     }
 }
