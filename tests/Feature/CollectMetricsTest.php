@@ -42,9 +42,58 @@ class CollectMetricsTest extends TestCase
             'value' => 'DE',
             'count' => 2,
         ]);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'utm_source']);
 
         $this->assertFalse(Schema::hasColumn('daily_metrics', 'created_at'));
         $this->assertFalse(Schema::hasColumn('daily_metrics', 'updated_at'));
+    }
+
+    public function test_processed_collection_stores_attribution_as_independent_optional_counters(): void
+    {
+        $website = $this->website();
+
+        $this->postJson(route('collect.processed', $website), [
+            'path' => '/landing?secret=discarded',
+            'country' => 'DE',
+            'browser' => 'Firefox iOS',
+            'os' => 'iOS',
+            'device' => Device::Mobile->value,
+            'format' => Format::Html->value,
+            'referrer' => 'https://www.google.com/search?q=private',
+            'utm_source' => 'newsletter',
+            'utm_medium' => 'email',
+            'utm_campaign' => 'launch',
+            'utm_term' => 'privacy analytics',
+            'utm_content' => 'hero-link',
+        ])->assertNoContent();
+
+        $this->assertDatabaseCount('daily_metrics', 12);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'path', 'value' => '/landing']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'referrer', 'value' => 'google.com']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'utm_source', 'value' => 'newsletter']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'utm_medium', 'value' => 'email']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'utm_campaign', 'value' => 'launch']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'utm_term', 'value' => 'privacy analytics']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'utm_content', 'value' => 'hero-link']);
+        $this->assertDatabaseMissing('daily_metrics', ['value' => 'https://www.google.com/search?q=private']);
+    }
+
+    public function test_same_site_referrer_is_not_recorded(): void
+    {
+        $website = $this->website();
+
+        $this->postJson(route('collect.processed', $website), [
+            'path' => '/',
+            'country' => 'DE',
+            'browser' => 'Firefox',
+            'os' => 'Linux',
+            'device' => Device::Desktop->value,
+            'format' => Format::Html->value,
+            'referrer' => 'https://www.example.com/from-here',
+        ])->assertNoContent();
+
+        $this->assertDatabaseCount('daily_metrics', 6);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'referrer']);
     }
 
     public function test_processed_collection_normalizes_browser_and_os_families(): void
