@@ -36,10 +36,6 @@ class ProcessedCollectController extends Controller
             device: $validated['device'],
         );
 
-        if ($userAgent->isBot() && ! $website->should_track_bots) {
-            return response()->noContent();
-        }
-
         $website->record(Dimensions::from(
             path: $validated['path'],
             country: $validated['country'] ?? null,

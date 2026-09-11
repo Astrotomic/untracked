@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Website;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
 class TestController extends Controller
 {
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request): JsonResponse
     {
         $website = Website::query()->firstOrCreate(
             ['domain' => $request->getHost()],
@@ -19,13 +19,13 @@ class TestController extends Controller
             ],
         );
 
-        $website->recordRaw(
+        $dimensions = $website->recordRaw(
             url: $request->fullUrl(),
             ip: (string) $request->ip(),
             userAgent: (string) $request->userAgent(),
             referrer: $request->headers->get('referer'),
         );
 
-        return response('Tracked. Refresh to add another request.');
+        return response()->json($dimensions);
     }
 }

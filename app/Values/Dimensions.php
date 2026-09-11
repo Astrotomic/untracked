@@ -11,8 +11,11 @@ use App\Normalizers\CountryNormalizer;
 use App\Normalizers\PathNormalizer;
 use App\Normalizers\ReferrerNormalizer;
 use App\Normalizers\ValueNormalizer;
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Support\Jsonable;
+use JsonSerializable;
 
-final readonly class Dimensions
+final readonly class Dimensions implements Arrayable, Jsonable, JsonSerializable
 {
     public static function fromRaw(
         string $url,
@@ -125,5 +128,36 @@ final readonly class Dimensions
             os: null,
             device: $userAgent->device,
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'path' => $this->path,
+            'country' => $this->country,
+            'user_agent' => [
+                'client' => $this->userAgent->client,
+                'os' => $this->userAgent->os,
+                'device' => $this->userAgent->device,
+                'is_bot' => $this->userAgent->isBot(),
+            ],
+            'format' => $this->format,
+            'referrer' => $this->referrer,
+            'utm_source' => $this->utmSource,
+            'utm_medium' => $this->utmMedium,
+            'utm_campaign' => $this->utmCampaign,
+            'utm_term' => $this->utmTerm,
+            'utm_content' => $this->utmContent,
+        ];
+    }
+
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
+    }
+
+    public function toJson($options = 0): string
+    {
+        return json_encode($this->jsonSerialize(), $options | JSON_THROW_ON_ERROR);
     }
 }
