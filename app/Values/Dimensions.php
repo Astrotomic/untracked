@@ -95,7 +95,7 @@ final readonly class Dimensions
         return match ($metric) {
             Metric::Path => $this->path,
             Metric::Country => $this->country,
-            Metric::Browser => $this->userAgent->browser,
+            Metric::Client => $this->userAgent->client,
             Metric::OperatingSystem => $this->userAgent->os,
             Metric::Device => $this->userAgent->device->value,
             Metric::Format => $this->format->value,
@@ -114,14 +114,14 @@ final readonly class Dimensions
             return $userAgent;
         }
 
-        $browser = $userAgent->browser;
+        $client = $userAgent->client;
 
-        if ($browser === null || $browser === '' || in_array(strtolower($browser), ['bot', 'other'], true)) {
-            $browser = null;
+        if ($client === null || $client === '' || in_array(strtolower($client), ['bot', 'other'], true)) {
+            $client = null;
         }
 
         return new UserAgent(
-            browser: $browser,
+            client: $client,
             os: null,
             device: $userAgent->device,
         );
