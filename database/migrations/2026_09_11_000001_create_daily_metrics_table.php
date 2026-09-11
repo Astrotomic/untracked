@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('value', 500)->index();
             $table->unsignedBigInteger('count')->default(0);
 
-            $table->primary(['website_id', 'date', 'metric', 'value']);
+            $table->primary(['website_uuid', 'date', 'metric', 'value']);
 
             // PostgreSQL can combine these indexes for arbitrary dashboard filters.
             // Other database engines may benefit from workload-specific composite indexes.

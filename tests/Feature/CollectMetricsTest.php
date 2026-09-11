@@ -31,13 +31,13 @@ class CollectMetricsTest extends TestCase
 
         $this->assertDatabaseCount('daily_metrics', 6);
         $this->assertDatabaseHas('daily_metrics', [
-            'website_id' => $website->getKey(),
+            'website_uuid' => $website->getKey(),
             'metric' => 'path',
             'value' => '/blog/example',
             'count' => 2,
         ]);
         $this->assertDatabaseHas('daily_metrics', [
-            'website_id' => $website->getKey(),
+            'website_uuid' => $website->getKey(),
             'metric' => 'country',
             'value' => 'DE',
             'count' => 2,

@@ -19,7 +19,7 @@ Website configuration is normal application data:
 Analytics data has exactly five columns:
 
 ```text
-website_id
+website_uuid
 date
 metric
 value
