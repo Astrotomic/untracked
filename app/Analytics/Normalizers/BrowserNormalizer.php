@@ -18,11 +18,13 @@ class BrowserNormalizer
             return 'Bot';
         }
 
-        if (in_array(strtolower($family), ['chrome mobile webview', 'chrome webview'], true)) {
+        $normalized = strtolower($family);
+
+        if (str_contains($normalized, 'chrome') && str_contains($normalized, 'webview')) {
             return 'Chrome WebView';
         }
 
-        if (in_array(strtolower($family), ['mobile safari ui/wkwebview', 'safari webview'], true)) {
+        if (str_contains($normalized, 'safari') && str_contains($normalized, 'webview')) {
             return 'Safari WebView';
         }
 
