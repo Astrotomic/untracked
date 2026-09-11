@@ -63,6 +63,9 @@ class UapUserAgentDriverTest extends TestCase
                 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
                 'Google', null, Device::Bot, true,
             ], [
+                'UnknownCrawler/1.0',
+                null, null, Device::Bot, true,
+            ], [
                 'Dalvik/1.6.0 (Linux; U; Android 4.4.4; SM-T560 Build/KTU84P) [ip:213.32.4.95]',
                 'Android', 'Android', Device::Mobile, false,
             ],
