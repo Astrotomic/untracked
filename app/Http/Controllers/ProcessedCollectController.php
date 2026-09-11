@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Analytics\WebsiteOriginValidator;
 use App\Enums\Device;
 use App\Enums\Format;
 use App\Models\Website;
@@ -14,13 +13,8 @@ use Illuminate\Validation\Rule;
 
 class ProcessedCollectController extends Controller
 {
-    public function __invoke(
-        Request $request,
-        Website $website,
-        WebsiteOriginValidator $originValidator,
-    ): Response {
-        $originValidator->validate($request, $website);
-
+    public function __invoke(Request $request, Website $website): Response
+    {
         $validated = $request->validate([
             'path' => ['required', 'string', 'max:2048'],
             'country' => ['required', 'string', 'regex:/^[A-Za-z]{2}$/'],
