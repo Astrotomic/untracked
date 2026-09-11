@@ -11,7 +11,6 @@ enum Browser: string
     case Opera = 'Opera';
     case SamsungInternet = 'Samsung Internet';
     case Bot = 'Bot';
-    case Unknown = 'Unknown';
     case Other = 'Other';
 
     public static function normalize(string $family): self
@@ -19,7 +18,6 @@ enum Browser: string
         $family = strtolower(trim($family));
 
         return match (true) {
-            $family === '', $family === 'other' => self::Unknown,
             str_contains($family, 'chrome'), $family === 'chromium' => self::Chrome,
             str_contains($family, 'firefox') => self::Firefox,
             str_contains($family, 'safari') => self::Safari,
