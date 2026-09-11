@@ -28,6 +28,12 @@
             'os' => 'Operating systems',
             'device' => 'Devices',
             'format' => 'Formats',
+            'referrer' => 'Referrers',
+            'utm_source' => 'UTM sources',
+            'utm_medium' => 'UTM mediums',
+            'utm_campaign' => 'UTM campaigns',
+            'utm_term' => 'UTM terms',
+            'utm_content' => 'UTM contents',
         ];
     @endphp
 
@@ -51,7 +57,7 @@
 
     <section class="mt-8 rounded-xl border border-zinc-800 p-6">
         <h2 class="font-medium">Browser collection</h2>
-        <p class="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">The script derives browser, OS and device from the request in memory. Raw IP addresses and User-Agent strings are never written to analytics storage.</p>
+        <p class="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">The script derives browser, OS and device from the request in memory. It sends only the pathname, external referrer hostname and standard UTM values; full referrer URLs and full query strings never leave the page.</p>
 
         <pre class="mt-4 overflow-x-auto rounded-lg bg-black/40 p-4 text-sm text-zinc-300"><code>&lt;script defer data-website-id="{{ $website->uuid }}" src="{{ url('/script.js') }}"&gt;&lt;/script&gt;</code></pre>
     </section>
@@ -68,7 +74,11 @@
   "browser": "Firefox",
   "os": "Linux",
   "device": "desktop",
-  "format": "markdown"
+  "format": "markdown",
+  "referrer": "news.ycombinator.com",
+  "utm_source": "newsletter",
+  "utm_medium": "email",
+  "utm_campaign": "launch"
 }</code></pre>
     </section>
 </x-layouts.app>
