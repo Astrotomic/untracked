@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'domain', 'timezone', 'track_bots'])]
+#[Fillable(['name', 'domain', 'timezone', 'should_track_bots'])]
 class Website extends Model
 {
     protected static function booted(): void
@@ -20,7 +20,7 @@ class Website extends Model
     protected function casts(): array
     {
         return [
-            'track_bots' => 'boolean',
+            'should_track_bots' => 'boolean',
         ];
     }
 
