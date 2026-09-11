@@ -11,8 +11,8 @@
     ],
     "require": {
         "php": "^8.3",
-        "astrotomic/php-unavatar": "^0.3",
         "ext-intl": "*",
+        "astrotomic/php-unavatar": "^0.3",
         "geoip2/geoip2": "^3.4",
         "laravel/framework": "^13.31",
         "league/iso3166": "^4.5",
