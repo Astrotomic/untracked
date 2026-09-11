@@ -21,8 +21,12 @@ final readonly class Dimensions
         ?string $referrer,
         Website $website,
     ): self {
+        $userAgent = UserAgentManager::make()->driver()->resolve($userAgent);
         $query = [];
-        parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+
+        if (! $userAgent->isBot()) {
+            parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+        }
 
         $utm = static fn (string $key): ?string => is_string($query[$key] ?? null)
             ? $query[$key]
@@ -30,8 +34,8 @@ final readonly class Dimensions
 
         return self::from(
             path: $url,
-            country: IpManager::make()->driver()->country($ip),
-            userAgent: UserAgentManager::make()->driver()->resolve($userAgent),
+            country: $userAgent->isBot() ? null : IpManager::make()->driver()->country($ip),
+            userAgent: $userAgent,
             format: Format::Html,
             referrer: $referrer,
             utmSource: $utm('utm_source'),
@@ -56,17 +60,19 @@ final readonly class Dimensions
         ?string $utmContent,
         Website $website,
     ): self {
+        $isBot = $userAgent->isBot();
+
         return new self(
             path: PathNormalizer::make()->normalize($path),
-            country: CountryNormalizer::make()->normalize($country),
+            country: $isBot ? null : CountryNormalizer::make()->normalize($country),
             userAgent: $userAgent,
             format: $format,
-            referrer: ReferrerNormalizer::make()->normalize($referrer, $website->domain),
-            utmSource: ValueNormalizer::make()->normalize($utmSource),
-            utmMedium: ValueNormalizer::make()->normalize($utmMedium),
-            utmCampaign: ValueNormalizer::make()->normalize($utmCampaign),
-            utmTerm: ValueNormalizer::make()->normalize($utmTerm),
-            utmContent: ValueNormalizer::make()->normalize($utmContent),
+            referrer: $isBot ? null : ReferrerNormalizer::make()->normalize($referrer, $website->domain),
+            utmSource: $isBot ? null : ValueNormalizer::make()->normalize($utmSource),
+            utmMedium: $isBot ? null : ValueNormalizer::make()->normalize($utmMedium),
+            utmCampaign: $isBot ? null : ValueNormalizer::make()->normalize($utmCampaign),
+            utmTerm: $isBot ? null : ValueNormalizer::make()->normalize($utmTerm),
+            utmContent: $isBot ? null : ValueNormalizer::make()->normalize($utmContent),
         );
     }
 
