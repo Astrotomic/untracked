@@ -13,13 +13,25 @@ class MetricRecorder
         $websiteId = $website->getKey();
         $date = now($website->timezone)->toDateString();
 
-        $rows = collect(Metric::cases())->map(fn (Metric $metric): array => [
-            'website_id' => $websiteId,
-            'date' => $date,
-            'metric' => $metric->value,
-            'value' => $dimensions->value($metric),
-            'count' => 0,
-        ])->all();
+        $rows = collect(Metric::cases())
+            ->map(function (Metric $metric) use ($websiteId, $date, $dimensions): ?array {
+                $value = $dimensions->value($metric);
+
+                if ($value === null || $value === '') {
+                    return null;
+                }
+
+                return [
+                    'website_id' => $websiteId,
+                    'date' => $date,
+                    'metric' => $metric->value,
+                    'value' => $value,
+                    'count' => 0,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
 
         DB::transaction(function () use ($rows, $websiteId, $date): void {
             DB::table('daily_metrics')->insertOrIgnore($rows);
