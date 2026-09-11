@@ -45,7 +45,7 @@ final readonly class Dimensions
 
     public static function from(
         string $path,
-        string $country,
+        ?string $country,
         UserAgent $userAgent,
         Format $format,
         ?string $referrer,
@@ -72,7 +72,7 @@ final readonly class Dimensions
 
     public function __construct(
         public string $path,
-        public string $country,
+        public ?string $country,
         public UserAgent $userAgent,
         public Format $format,
         public ?string $referrer = null,
