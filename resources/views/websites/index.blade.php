@@ -15,7 +15,7 @@
                         <h2 class="font-medium">{{ $website->name }}</h2>
                         <p class="mt-1 text-sm text-zinc-500">{{ $website->domain }}</p>
                     </div>
-                    <span class="rounded-full border border-zinc-700 px-2 py-1 text-xs text-zinc-400">{{ $website->track_bots ? 'bots on' : 'bots off' }}</span>
+                    <span class="rounded-full border border-zinc-700 px-2 py-1 text-xs text-zinc-400">{{ $website->should_track_bots ? 'bots on' : 'bots off' }}</span>
                 </div>
             </a>
         @empty
