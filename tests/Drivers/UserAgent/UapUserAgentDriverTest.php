@@ -19,11 +19,11 @@ class UapUserAgentDriverTest extends TestCase
     }
 
     #[DataProvider('userAgentsProvider')]
-    public function test_useragent_parsing(string $userAgentString, ?string $browser, ?string $os, Device $device, bool $isBot): void
+    public function test_useragent_parsing(string $userAgentString, ?string $client, ?string $os, Device $device, bool $isBot): void
     {
         $userAgent = $this->driver->resolve($userAgentString);
 
-        Assert::assertSame($browser, $userAgent->browser);
+        Assert::assertSame($client, $userAgent->client);
         Assert::assertSame($os, $userAgent->os);
         Assert::assertSame($device, $userAgent->device);
         Assert::assertSame($isBot, $userAgent->isBot());
