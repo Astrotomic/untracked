@@ -5,6 +5,9 @@ namespace App\Managers;
 use App\Concerns\Resolvable;
 use App\Contracts\FaviconDriver;
 use App\Drivers\Favicon\DuckDuckGoFaviconDriver;
+use App\Drivers\Favicon\GoogleFaviconDriver;
+use App\Drivers\Favicon\LogoDevFaviconDriver;
+use App\Drivers\Favicon\UnavatarFaviconDriver;
 use Illuminate\Support\Manager;
 
 final class FaviconManager extends Manager
@@ -29,5 +32,22 @@ final class FaviconManager extends Manager
     protected function createDuckduckgoDriver(): DuckDuckGoFaviconDriver
     {
         return new DuckDuckGoFaviconDriver;
+    }
+
+    protected function createGstaticDriver(): GoogleFaviconDriver
+    {
+        return new GoogleFaviconDriver;
+    }
+
+    protected function createUnavatarDriver(): UnavatarFaviconDriver
+    {
+        return new UnavatarFaviconDriver;
+    }
+
+    protected function createLogoDevDriver(): LogoDevFaviconDriver
+    {
+        return new LogoDevFaviconDriver(
+            config()->string('favicons.drivers.logo_dev.token', ''),
+        );
     }
 }
