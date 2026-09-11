@@ -23,9 +23,6 @@
 
         $countries = $metrics->get('country') ?? collect();
         $countryTotal = max(1, (int) $countries->sum('count'));
-        $countryFlag = static fn (string $country): string => collect(str_split(strtoupper($country)))
-            ->map(fn (string $character): string => \IntlChar::chr(127397 + ord($character)))
-            ->implode('');
         $countryName = static fn (string $country): string => \Locale::getDisplayRegion('und_'.strtoupper($country), 'en') ?: strtoupper($country);
     @endphp
 
@@ -102,7 +99,7 @@
                     <div>
                         <div class="mb-1.5 flex items-center justify-between gap-4 text-sm">
                             <span class="flex min-w-0 items-center gap-2.5 font-medium text-zinc-300">
-                                <span class="text-base leading-none">{{ $countryFlag($row->value) }}</span>
+                                <span class="text-base leading-none">{{ \Spatie\Emoji\Emoji::countryFlag($row->value) }}</span>
                                 <span class="truncate" title="{{ $row->value }}">{{ $countryName($row->value) }}</span>
                             </span>
                             <span class="shrink-0 tabular-nums text-zinc-500">{{ number_format($row->count) }} · {{ number_format($percentage, 1) }}%</span>
