@@ -24,6 +24,26 @@ class WebsiteManagementTest extends TestCase
         $this->get('/websites')->assertOk();
     }
 
+    public function test_authenticated_users_can_open_a_website_dashboard(): void
+    {
+        $this->withoutVite();
+        $this->actingAs(User::factory()->create());
+
+        $website = Website::query()->create([
+            'name' => 'gummibeer.dev',
+            'domain' => 'gummibeer.dev',
+            'timezone' => 'Europe/Berlin',
+            'should_track_bots' => true,
+        ]);
+
+        $this->get(route('websites.show', $website))
+            ->assertOk()
+            ->assertSee('Requests over time')
+            ->assertSee('requests-chart', false)
+            ->assertSee('country-map', false)
+            ->assertSee('analytics-dashboard-data', false);
+    }
+
     public function test_authenticated_users_can_create_websites(): void
     {
         $this->actingAs(User::factory()->create());
