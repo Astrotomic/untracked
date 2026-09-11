@@ -24,7 +24,7 @@
         $labels = [
             'path' => 'Paths',
             'country' => 'Countries',
-            'browser' => 'Clients',
+            'client' => 'Clients',
             'os' => 'Operating systems',
             'device' => 'Devices',
             'format' => 'Formats',
@@ -64,14 +64,14 @@
 
     <section class="mt-6 rounded-xl border border-zinc-800 p-6">
         <h2 class="font-medium">Server-side collection</h2>
-        <p class="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">Send only the coarse values you actually want to keep. Country, browser and OS are optional; when omitted, no corresponding metric is stored. Bot dimensions are reduced with the same rules as raw collection. This lets the analytics server avoid receiving the visitor's raw IP or User-Agent at all.</p>
+        <p class="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">Send only the coarse values you actually want to keep. Country, client and OS are optional; when omitted, no corresponding metric is stored. Bot dimensions are reduced with the same rules as raw collection. This lets the analytics server avoid receiving the visitor's raw IP or User-Agent at all.</p>
 
         <pre class="mt-4 overflow-x-auto rounded-lg bg-black/40 p-4 text-sm text-zinc-300"><code>POST {{ route('collect.processed', $website) }}
 
 {
   "path": "/blog/example",
   "country": "DE",
-  "browser": "Firefox",
+  "client": "Firefox",
   "os": "Linux",
   "device": "desktop",
   "format": "markdown",
