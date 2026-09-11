@@ -51,7 +51,7 @@
                 <div class="flex items-center justify-between gap-4">
                     <p class="text-sm text-zinc-500">{{ $item['label'] }}</p>
                     <span class="rounded-lg bg-zinc-800/80 p-2 text-zinc-400">
-                        <i data-lucide="{{ $item['icon'] }}" class="size-4"></i>
+                        <x-icon.lucide :name="$item['icon']" />
                     </span>
                 </div>
                 <p class="mt-5 text-3xl font-semibold tabular-nums tracking-tight">{{ number_format($item['value']) }}</p>
@@ -78,7 +78,7 @@
     <div class="mt-6 grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
         <section class="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 sm:p-6">
             <div class="flex items-center gap-3">
-                <span class="rounded-lg bg-zinc-800/80 p-2 text-zinc-400"><i data-lucide="globe-2" class="size-4"></i></span>
+                <span class="rounded-lg bg-zinc-800/80 p-2 text-zinc-400"><x-icon.lucide name="globe-2" /></span>
                 <div>
                     <h2 class="font-medium">Countries</h2>
                     <p class="text-sm text-zinc-500">Request distribution by resolved country.</p>
@@ -99,7 +99,7 @@
                     <div>
                         <div class="mb-1.5 flex items-center justify-between gap-4 text-sm">
                             <span class="flex min-w-0 items-center gap-2.5 font-medium text-zinc-300">
-                                <span class="text-base leading-none">{{ \Spatie\Emoji\Emoji::countryFlag($row->value) }}</span>
+                                <x-icon.country :country="$row->value" />
                                 <span class="truncate" title="{{ $row->value }}">{{ $countryName($row->value) }}</span>
                             </span>
                             <span class="shrink-0 tabular-nums text-zinc-500">{{ number_format($row->count) }} · {{ number_format($percentage, 1) }}%</span>
@@ -124,7 +124,7 @@
             <section class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
                 <div class="flex items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
-                        <span class="rounded-lg bg-zinc-800/80 p-2 text-zinc-400"><i data-lucide="{{ $config['icon'] }}" class="size-4"></i></span>
+                        <span class="rounded-lg bg-zinc-800/80 p-2 text-zinc-400"><x-icon.lucide :name="$config['icon']" /></span>
                         <h2 class="font-medium">{{ $config['label'] }}</h2>
                     </div>
                     <span class="text-xs tabular-nums text-zinc-600">{{ number_format((int) $rows->sum('count')) }}</span>
@@ -132,19 +132,16 @@
 
                 <div class="mt-5 space-y-2.5">
                     @forelse ($rows->take(8) as $row)
-                        @php
-                            $percentage = ($row->count / $total) * 100;
-                            $iconDomain = match ($metric) {
-                                'client' => (new \App\Values\Client($row->value))->domain(),
-                                'referrer' => $row->value,
-                                default => null,
-                            };
-                        @endphp
+                        @php($percentage = ($row->count / $total) * 100)
                         <div class="relative overflow-hidden rounded-lg bg-zinc-950/50">
                             <div class="absolute inset-y-0 left-0 bg-zinc-800/60" style="width: {{ min(100, $percentage) }}%"></div>
                             <div class="relative flex items-center justify-between gap-4 px-3 py-2.5 text-sm">
                                 <span class="flex min-w-0 items-center gap-2.5 text-zinc-300" title="{{ $row->value }}">
-                                    <x-favicon :domain="$iconDomain" />
+                                    @if ($metric === 'client')
+                                        <x-icon.client :client="$row->value" />
+                                    @elseif ($metric === 'referrer')
+                                        <x-icon.favicon :domain="$row->value" />
+                                    @endif
                                     <span class="truncate">{{ $row->value }}</span>
                                 </span>
                                 <span class="shrink-0 tabular-nums text-zinc-500">{{ number_format($row->count) }} <span class="text-zinc-700">·</span> {{ number_format($percentage, 1) }}%</span>
