@@ -4,6 +4,7 @@ namespace App\Normalizers;
 
 use App\Concerns\Resolvable;
 use App\Contracts\Normalizer;
+use Illuminate\Support\Str;
 
 final readonly class ReferrerNormalizer implements Normalizer
 {
@@ -14,7 +15,7 @@ final readonly class ReferrerNormalizer implements Normalizer
         $host = $this->normalizeHost($value);
         $websiteDomain = $this->normalizeHost($websiteDomain);
 
-        if ($websiteDomain !== null && strcasecmp($websiteDomain, $host) === 0) {
+        if ($websiteDomain !== null && Str::equals($websiteDomain, $host)) {
             return null;
         }
 

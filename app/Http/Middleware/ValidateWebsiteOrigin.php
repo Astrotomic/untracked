@@ -7,6 +7,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ValidateWebsiteOrigin
 {
@@ -14,18 +15,22 @@ class ValidateWebsiteOrigin
     {
         $origin = $request->header('Origin');
 
-        if (! $origin) {
+        if (empty($origin)) {
             return $next($request);
         }
 
-        /** @var Website $website */
-        $website = $request->route('website');
         $host = parse_url($origin, PHP_URL_HOST);
 
-        abort_unless(
-            is_string($host) && hash_equals(Str::lower($website->domain), Str::lower($host)),
-            Response::HTTP_FORBIDDEN,
-        );
+        if (empty($host)) {
+            return $next($request);
+        }
+
+        $website = $request->route('website');
+        if ($website instanceof Website) {
+            if (! Str::equals($website->domain, $host)) {
+                throw HttpException::fromStatusCode(Response::HTTP_FORBIDDEN);
+            }
+        }
 
         return $next($request);
     }
