@@ -3,7 +3,6 @@
     "description": "",
     "license": "MIT",
     "type": "project",
-    "keywords": [],
     "require": {
         "php": "^8.3",
         "geoip2/geoip2": "^3.4",
@@ -17,7 +16,7 @@
         "laravel/pint": "^1.32.1",
         "mockery/mockery": "^1.6.15",
         "nunomaduro/collision": "^8.9.5",
-        "phpstan/extension-installer": "^1.4",
+        "phpstan/extension-installer": "^1.4.3",
         "phpunit/phpunit": "^12.5.35",
         "spaze/phpstan-disallowed-calls": "^4.14"
     },
