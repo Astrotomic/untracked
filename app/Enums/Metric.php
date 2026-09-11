@@ -6,7 +6,7 @@ enum Metric: string
 {
     case Path = 'path';
     case Country = 'country';
-    case Browser = 'browser';
+    case Client = 'client';
     case OperatingSystem = 'os';
     case Device = 'device';
     case Format = 'format';
