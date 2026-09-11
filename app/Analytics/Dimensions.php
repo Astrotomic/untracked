@@ -2,26 +2,24 @@
 
 namespace App\Analytics;
 
-use App\Analytics\Enums\Browser;
 use App\Analytics\Enums\Device;
 use App\Analytics\Enums\Format;
-use App\Analytics\Enums\OperatingSystem;
 
 readonly class Dimensions
 {
     public function __construct(
         public string $path,
         public string $country,
-        public Browser $browser,
-        public OperatingSystem $os,
+        public string $browser,
+        public string $os,
         public Device $device,
         public Format $format,
     ) {}
 
     public function isBot(): bool
     {
-        return $this->browser === Browser::Bot
-            || $this->os === OperatingSystem::Bot
+        return $this->browser === 'Bot'
+            || $this->os === 'Bot'
             || $this->device === Device::Bot;
     }
 
@@ -30,8 +28,8 @@ readonly class Dimensions
         return match ($metric) {
             Metric::Path => $this->path,
             Metric::Country => $this->country,
-            Metric::Browser => $this->browser->value,
-            Metric::OperatingSystem => $this->os->value,
+            Metric::Browser => $this->browser,
+            Metric::OperatingSystem => $this->os,
             Metric::Device => $this->device->value,
             Metric::Format => $this->format->value,
         };
