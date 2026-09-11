@@ -44,7 +44,7 @@ class ProcessedCollectController extends Controller
             format: Format::from($validated['format']),
         );
 
-        if ($dimensions->isBot() && ! $website->track_bots) {
+        if ($dimensions->isBot() && ! $website->should_track_bots) {
             return response()->noContent();
         }
 
