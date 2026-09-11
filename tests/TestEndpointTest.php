@@ -14,7 +14,15 @@ class TestEndpointTest extends TestCase
         $this->withHeaders([
             'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64; rv:142.0) Gecko/20100101 Firefox/142.0',
             'Referer' => 'https://example.org/somewhere',
-        ])->get('/test?utm_source=manual')->assertOk()->assertSeeText('Tracked.');
+        ])->get('/test?utm_source=manual')
+            ->assertOk()
+            ->assertJsonPath('path', '/test')
+            ->assertJsonPath('client', null)
+            ->assertJsonPath('user_agent.client', 'Firefox')
+            ->assertJsonPath('user_agent.os', 'Linux')
+            ->assertJsonPath('user_agent.device', 'desktop')
+            ->assertJsonPath('referrer', 'example.org')
+            ->assertJsonPath('utm_source', 'manual');
 
         $website = Website::query()->sole();
 
