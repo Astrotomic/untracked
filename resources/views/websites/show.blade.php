@@ -137,9 +137,9 @@
                     @forelse ($rows->take(8) as $row)
                         @php
                             $percentage = ($row->count / $total) * 100;
-                            $iconUrl = match ($metric) {
-                                'client' => $clientFavicons[$row->value] ?? null,
-                                'referrer' => $referrerFavicons[$row->value] ?? null,
+                            $iconDomain = match ($metric) {
+                                'client' => (new \App\Values\Client($row->value))->domain(),
+                                'referrer' => $row->value,
                                 default => null,
                             };
                         @endphp
@@ -147,9 +147,7 @@
                             <div class="absolute inset-y-0 left-0 bg-zinc-800/60" style="width: {{ min(100, $percentage) }}%"></div>
                             <div class="relative flex items-center justify-between gap-4 px-3 py-2.5 text-sm">
                                 <span class="flex min-w-0 items-center gap-2.5 text-zinc-300" title="{{ $row->value }}">
-                                    @if ($iconUrl)
-                                        <img src="{{ $iconUrl }}" alt="" class="size-4 shrink-0 rounded-sm" loading="lazy" referrerpolicy="no-referrer">
-                                    @endif
+                                    <x-favicon :domain="$iconDomain" />
                                     <span class="truncate">{{ $row->value }}</span>
                                 </span>
                                 <span class="shrink-0 tabular-nums text-zinc-500">{{ number_format($row->count) }} <span class="text-zinc-700">·</span> {{ number_format($percentage, 1) }}%</span>
