@@ -15,6 +15,7 @@
         "geoip2/geoip2": "^3.4",
         "laravel/framework": "^13.31",
         "league/iso3166": "^4.5",
+        "spatie/emoji": "^4.1",
         "ua-parser/uap-php": "^3.10"
     },
     "require-dev": {
@@ -96,6 +97,6 @@
             "@php artisan config:clear --ansi @no_additional_args",
             "@php artisan test"
         ]
-    },
+    ],
     "$schema": "https://getcomposer.org/schema.json"
 }
