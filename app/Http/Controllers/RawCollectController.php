@@ -12,7 +12,7 @@ class RawCollectController extends Controller
     {
         $validated = $request->validate([
             'url' => ['required', 'url', 'max:2048'],
-            'referrer' => ['nullable', 'url', 'max:2048'],
+            'referrer' => ['nullable', 'string', 'max:2048'],
         ]);
 
         $website->recordRaw(
