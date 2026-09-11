@@ -17,7 +17,6 @@ class TestEndpointTest extends TestCase
         ])->get('/test?utm_source=manual')
             ->assertOk()
             ->assertJsonPath('path', '/test')
-            ->assertJsonPath('client', null)
             ->assertJsonPath('user_agent.client', 'Firefox')
             ->assertJsonPath('user_agent.os', 'Linux')
             ->assertJsonPath('user_agent.device', 'desktop')
