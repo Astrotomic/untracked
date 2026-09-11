@@ -19,7 +19,7 @@ class CollectMetricsTest extends TestCase
         $payload = [
             'path' => '/blog/example?utm_source=test',
             'country' => 'de',
-            'browser' => 'Firefox',
+            'client' => 'Firefox',
             'os' => 'Linux',
             'device' => Device::Desktop->value,
             'format' => Format::Markdown->value,
@@ -41,6 +41,13 @@ class CollectMetricsTest extends TestCase
             'value' => 'DE',
             'count' => 2,
         ]);
+        $this->assertDatabaseHas('daily_metrics', [
+            'website_uuid' => $website->getKey(),
+            'metric' => 'client',
+            'value' => 'Firefox',
+            'count' => 2,
+        ]);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'browser']);
         $this->assertDatabaseMissing('daily_metrics', ['metric' => 'utm_source']);
 
         $this->assertFalse(Schema::hasColumn('daily_metrics', 'created_at'));
@@ -54,7 +61,7 @@ class CollectMetricsTest extends TestCase
         $this->postJson(route('collect.processed', $website), [
             'path' => '/',
             'country' => null,
-            'browser' => 'Firefox',
+            'client' => 'Firefox',
             'os' => 'Linux',
             'device' => Device::Desktop->value,
             'format' => Format::Html->value,
@@ -71,7 +78,7 @@ class CollectMetricsTest extends TestCase
         $this->postJson(route('collect.processed', $website), [
             'path' => '/landing?secret=discarded',
             'country' => 'DE',
-            'browser' => 'Firefox iOS',
+            'client' => 'Firefox iOS',
             'os' => 'iOS',
             'device' => Device::Mobile->value,
             'format' => Format::Html->value,
@@ -101,7 +108,7 @@ class CollectMetricsTest extends TestCase
         $this->postJson(route('collect.processed', $website), [
             'path' => '/',
             'country' => 'DE',
-            'browser' => 'Firefox',
+            'client' => 'Firefox',
             'os' => 'Linux',
             'device' => Device::Desktop->value,
             'format' => Format::Html->value,
@@ -112,20 +119,20 @@ class CollectMetricsTest extends TestCase
         $this->assertDatabaseMissing('daily_metrics', ['metric' => 'referrer']);
     }
 
-    public function test_processed_collection_normalizes_browser_and_os_families(): void
+    public function test_processed_collection_normalizes_client_and_os_families(): void
     {
         $website = $this->website();
 
         $this->postJson(route('collect.processed', $website), [
             'path' => '/',
             'country' => 'DE',
-            'browser' => 'Firefox iOS',
+            'client' => 'Firefox iOS',
             'os' => 'Windows XP',
             'device' => Device::Desktop->value,
             'format' => Format::Html->value,
         ])->assertNoContent();
 
-        $this->assertDatabaseHas('daily_metrics', ['metric' => 'browser', 'value' => 'Firefox']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'client', 'value' => 'Firefox']);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'os', 'value' => 'Windows']);
     }
 
@@ -136,7 +143,7 @@ class CollectMetricsTest extends TestCase
         $this->postJson(route('collect.processed', $website), [
             'path' => '/',
             'country' => 'DE',
-            'browser' => 'Firefox',
+            'client' => 'Firefox',
             'os' => 'Linux',
             'device' => 'laptop',
             'format' => Format::Html->value,
@@ -152,7 +159,7 @@ class CollectMetricsTest extends TestCase
         $this->postJson(route('collect.processed', $website), [
             'path' => '/blog/example?utm_source=newsletter',
             'country' => 'US',
-            'browser' => 'OpenAI',
+            'client' => 'OpenAI',
             'os' => 'Linux',
             'device' => Device::Bot->value,
             'format' => Format::Markdown->value,
@@ -166,7 +173,7 @@ class CollectMetricsTest extends TestCase
 
         $this->assertDatabaseCount('daily_metrics', 4);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'path', 'value' => '/blog/example']);
-        $this->assertDatabaseHas('daily_metrics', ['metric' => 'browser', 'value' => 'OpenAI']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'client', 'value' => 'OpenAI']);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'device', 'value' => Device::Bot->value]);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'format', 'value' => Format::Markdown->value]);
         $this->assertDatabaseMissing('daily_metrics', ['metric' => 'country']);
@@ -196,7 +203,7 @@ class CollectMetricsTest extends TestCase
         $this->assertDatabaseCount('daily_metrics', 11);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'path', 'value' => '/landing']);
         $this->assertDatabaseMissing('daily_metrics', ['metric' => 'country']);
-        $this->assertDatabaseHas('daily_metrics', ['metric' => 'browser', 'value' => 'Firefox']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'client', 'value' => 'Firefox']);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'os', 'value' => 'Linux']);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'device', 'value' => Device::Desktop->value]);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'format', 'value' => Format::Html->value]);
@@ -236,7 +243,7 @@ class CollectMetricsTest extends TestCase
 
         $this->assertDatabaseCount('daily_metrics', 4);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'path', 'value' => '/blog/example']);
-        $this->assertDatabaseHas('daily_metrics', ['metric' => 'browser', 'value' => 'Google']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'client', 'value' => 'Google']);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'device', 'value' => Device::Bot->value]);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'format', 'value' => Format::Html->value]);
         $this->assertDatabaseMissing('daily_metrics', ['metric' => 'country']);
