@@ -2,22 +2,20 @@
 
 namespace App\Analytics;
 
-use App\Analytics\Enums\Browser;
 use App\Analytics\Enums\Device;
-use App\Analytics\Enums\OperatingSystem;
 
 readonly class UserAgent
 {
     public function __construct(
-        public Browser $browser,
-        public OperatingSystem $os,
+        public string $browser,
+        public string $os,
         public Device $device,
     ) {}
 
     public function isBot(): bool
     {
-        return $this->browser === Browser::Bot
-            || $this->os === OperatingSystem::Bot
+        return $this->browser === 'Bot'
+            || $this->os === 'Bot'
             || $this->device === Device::Bot;
     }
 }
