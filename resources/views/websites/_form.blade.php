@@ -20,8 +20,8 @@
     </label>
 
     <label class="flex items-start gap-3 rounded-lg border border-zinc-800 p-4">
-        <input type="hidden" name="track_bots" value="0">
-        <input type="checkbox" name="track_bots" value="1" @checked(old('track_bots', $website?->track_bots ?? true)) class="mt-1 rounded border-zinc-700 bg-zinc-900">
+        <input type="hidden" name="should_track_bots" value="0">
+        <input type="checkbox" name="should_track_bots" value="1" @checked(old('should_track_bots', $website?->should_track_bots ?? true)) class="mt-1 rounded border-zinc-700 bg-zinc-900">
         <span>
             <span class="block text-sm font-medium">Track bots</span>
             <span class="mt-1 block text-sm text-zinc-500">Bots become coarse <code>Bot</code>/<code>bot</code> metric values. They are never identified individually.</span>
