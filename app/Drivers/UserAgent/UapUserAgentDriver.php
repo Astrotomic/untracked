@@ -21,13 +21,15 @@ final readonly class UapUserAgentDriver implements UserAgentDriver
         $osFamily = $result->os->family;
         $os = OperatingSystemNormalizer::make()->normalize($osFamily);
         $botCompany = BotCompanyNormalizer::make()->normalize($userAgent);
-        $device = Device::normalize(
-            family: $result->device->family,
-            os: $os,
-            userAgent: $userAgent,
-        );
+        $device = $botCompany === null
+            ? Device::normalize(
+                family: $result->device->family,
+                os: $os,
+                userAgent: $userAgent,
+            )
+            : Device::Bot;
 
-        if ($botCompany !== null || $device === Device::Bot) {
+        if ($device === Device::Bot) {
             return new UserAgent(
                 browser: $botCompany,
                 os: null,
