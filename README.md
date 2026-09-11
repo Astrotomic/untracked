@@ -89,7 +89,9 @@ Untracked deliberately separates requests that still contain raw client informat
 POST /api/websites/{uuid}/collect/raw
 ```
 
-The raw collector reads the request IP and User-Agent, resolves them in memory, reduces them to coarse analytics dimensions and immediately forgets the raw values. Only the independent daily counters are persisted.
+The raw collector works from four raw values: the full page URL, IP address, User-Agent and referrer. Browser clients only send the URL and referrer explicitly; the IP and User-Agent already arrive with the HTTP request.
+
+Untracked derives everything else in memory: pathname and UTM parameters from the URL, country from the IP, browser/OS/device from the User-Agent, and referrer domain from the full referrer. The raw values are then discarded and only independent daily counters are persisted. Raw browser collection is always recorded as HTML.
 
 The bundled browser script uses this endpoint:
 
@@ -97,9 +99,9 @@ The bundled browser script uses this endpoint:
 <script defer data-website-id="YOUR_WEBSITE_UUID" src="https://analytics.example.com/script.js"></script>
 ```
 
-The script sends only the current pathname, `html` format, external referrer hostname and the five standard UTM values when present. It parses `document.referrer` and `window.location.search` in the browser, so the full referrer URL and full page query never leave the page.
+The script deliberately does no analytics parsing itself. It posts `window.location.href` and `document.referrer` and leaves all reduction to Untracked. That means the full page URL and referrer reach the Untracked server transiently, but neither is persisted as analytics data.
 
-Same-site referrers are ignored. Browser requests include an `Origin` header, which Untracked checks against the website's configured domain.
+Same-site referrers are ignored during normalization. Browser requests include an `Origin` header, which Untracked checks against the website's configured domain.
 
 ### Processed collection
 
