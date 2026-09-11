@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Metric;
 use App\Http\Requests\WebsiteRequest;
+use App\Managers\Favicons\FaviconManager;
 use App\Models\DailyMetric;
 use App\Models\Website;
 use Illuminate\Http\RedirectResponse;
@@ -86,6 +87,19 @@ class WebsiteController extends Controller
             ])
             ->all() ?? [];
 
+        $favicons = FaviconManager::make();
+        $clientFavicons = $metrics->get(Metric::Client->value)
+            ?->mapWithKeys(fn (DailyMetric $metric): array => [
+                $metric->value => $favicons->clientUrl($metric->value),
+            ])
+            ->filter()
+            ->all() ?? [];
+        $referrerFavicons = $metrics->get(Metric::Referrer->value)
+            ?->mapWithKeys(fn (DailyMetric $metric): array => [
+                $metric->value => $favicons->url($metric->value),
+            ])
+            ->all() ?? [];
+
         return view('websites.show', compact(
             'website',
             'metrics',
@@ -96,6 +110,8 @@ class WebsiteController extends Controller
             'botRequests',
             'trend',
             'countryValues',
+            'clientFavicons',
+            'referrerFavicons',
         ));
     }
 
