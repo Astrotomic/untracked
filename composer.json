@@ -7,7 +7,7 @@
         "php": "^8.3",
         "geoip2/geoip2": "^3.4",
         "laravel/framework": "^13.31",
-        "league/iso3166": "^4.4",
+        "league/iso3166": "^4.5",
         "ua-parser/uap-php": "^3.10"
     },
     "require-dev": {
