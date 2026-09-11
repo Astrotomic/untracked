@@ -116,7 +116,7 @@ final readonly class Dimensions
 
         $browser = $userAgent->browser;
 
-        if (empty($browser) || in_array(strtolower($browser), ['bot', 'other'], true)) {
+        if ($browser === null || $browser === '' || in_array(strtolower($browser), ['bot', 'other'], true)) {
             $browser = null;
         }
 
