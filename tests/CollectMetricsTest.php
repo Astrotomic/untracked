@@ -145,6 +145,40 @@ class CollectMetricsTest extends TestCase
         $this->assertDatabaseCount('daily_metrics', 0);
     }
 
+    public function test_processed_bot_collection_drops_audience_dimensions(): void
+    {
+        $website = $this->website();
+
+        $this->postJson(route('collect.processed', $website), [
+            'path' => '/blog/example?utm_source=newsletter',
+            'country' => 'US',
+            'browser' => 'OpenAI',
+            'os' => 'Linux',
+            'device' => Device::Bot->value,
+            'format' => Format::Markdown->value,
+            'referrer' => 'https://example.org/recommended',
+            'utm_source' => 'newsletter',
+            'utm_medium' => 'email',
+            'utm_campaign' => 'launch',
+            'utm_term' => 'privacy analytics',
+            'utm_content' => 'hero-link',
+        ])->assertNoContent();
+
+        $this->assertDatabaseCount('daily_metrics', 4);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'path', 'value' => '/blog/example']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'browser', 'value' => 'OpenAI']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'device', 'value' => Device::Bot->value]);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'format', 'value' => Format::Markdown->value]);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'country']);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'os']);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'referrer']);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'utm_source']);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'utm_medium']);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'utm_campaign']);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'utm_term']);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'utm_content']);
+    }
+
     public function test_raw_collection_derives_dimensions_from_url_ip_user_agent_and_referrer(): void
     {
         $website = $this->website();
@@ -189,17 +223,27 @@ class CollectMetricsTest extends TestCase
         $this->assertDatabaseCount('daily_metrics', 0);
     }
 
-    public function test_raw_collection_coarsens_bots_when_enabled(): void
+    public function test_raw_bot_collection_keeps_bot_identity_without_audience_dimensions(): void
     {
         $website = $this->website();
 
         $this->withHeader('User-Agent', 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)')
-            ->postJson(route('collect.raw', $website), ['url' => 'https://example.com/'])
+            ->postJson(route('collect.raw', $website), [
+                'url' => 'https://example.com/blog/example?utm_source=newsletter&utm_campaign=launch',
+                'referrer' => 'https://example.org/recommended',
+            ])
             ->assertNoContent();
 
-        $this->assertDatabaseHas('daily_metrics', ['metric' => 'browser', 'value' => 'Bot']);
-        $this->assertDatabaseHas('daily_metrics', ['metric' => 'os', 'value' => 'Other']);
+        $this->assertDatabaseCount('daily_metrics', 4);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'path', 'value' => '/blog/example']);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'browser', 'value' => 'Google']);
         $this->assertDatabaseHas('daily_metrics', ['metric' => 'device', 'value' => Device::Bot->value]);
+        $this->assertDatabaseHas('daily_metrics', ['metric' => 'format', 'value' => Format::Html->value]);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'country']);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'os']);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'referrer']);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'utm_source']);
+        $this->assertDatabaseMissing('daily_metrics', ['metric' => 'utm_campaign']);
     }
 
     public function test_browser_collection_must_come_from_the_configured_domain(): void
