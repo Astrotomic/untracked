@@ -31,14 +31,14 @@ final readonly class UapUserAgentDriver implements UserAgentDriver
 
         if ($device === Device::Bot) {
             return new UserAgent(
-                browser: $botCompany,
+                client: $botCompany,
                 os: null,
                 device: Device::Bot,
             );
         }
 
         return UserAgent::from(
-            browser: $result->ua->family,
+            client: $result->ua->family,
             os: $os,
             device: $device,
         );
