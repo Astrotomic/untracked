@@ -6,7 +6,6 @@ use App\Enums\Metric;
 use App\Http\Requests\WebsiteRequest;
 use App\Models\DailyMetric;
 use App\Models\Website;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
