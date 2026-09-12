@@ -6,13 +6,15 @@ use App\Enums\Device;
 use App\Managers\UserAgent\UapUserAgentDriver;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use UAParser\Parser;
 
 class UapUserAgentDriverTest extends TestCase
 {
+    #[Test]
     #[DataProvider('userAgentsProvider')]
-    public function test_useragent_parsing(string $userAgentString, ?string $client, ?string $os, Device $device, bool $isBot): void
+    public function it_parses_user_agents(string $userAgentString, ?string $client, ?string $os, Device $device, bool $isBot): void
     {
         $driver = new UapUserAgentDriver(Parser::create());
         $userAgent = $driver->resolve($userAgentString);

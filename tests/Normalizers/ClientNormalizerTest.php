@@ -5,49 +5,45 @@ namespace Tests\Normalizers;
 use App\Normalizers\ClientNormalizer;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ClientNormalizerTest extends TestCase
 {
+    private ClientNormalizer $normalizer;
+
     protected function setUp(): void
     {
-        $this->normalizer = new ClientNormalizer;
-
         parent::setUp();
+
+        $this->normalizer = new ClientNormalizer;
     }
 
+    #[Test]
     #[DataProvider('clientProvider')]
-    public function test_it_removes_platform_and_device_details_from_client_families(string $family, string $expected): void
+    public function it_normalizes_client_families(string $family, string $expected): void
     {
         Assert::assertSame($expected, $this->normalizer->normalize($family));
-    }
-
-    public function test_it_drops_versions_from_processed_client_values(): void
-    {
-        Assert::assertSame('Firefox', $this->normalizer->normalize('Firefox 142.0.1'));
-    }
-
-    public function test_it_preserves_unknown_uap_families(): void
-    {
-        Assert::assertSame('Ladybird', $this->normalizer->normalize('Ladybird'));
     }
 
     public static function clientProvider(): array
     {
         return [
-            ['Firefox iOS', 'Firefox'],
-            ['Chrome Mobile iOS', 'Chrome'],
-            ['Chrome Mobile', 'Chrome'],
-            ['Chrome Mobile WebView', 'Chrome WebView'],
-            ['Google Chrome Embedded WebView', 'Chrome WebView'],
-            ['Edge Mobile', 'Edge'],
-            ['Mobile Safari', 'Safari'],
-            ['Mobile Safari UI/WKWebView', 'Safari WebView'],
-            ['Safari Embedded WebView', 'Safari WebView'],
-            ['DuckDuckGo Mobile', 'DuckDuckGo'],
-            ['Ecosia Android', 'Ecosia'],
-            ['QQ Browser Mobile', 'QQ Browser'],
-            ['Opera Mini', 'Opera'],
+            'firefox ios' => ['Firefox iOS', 'Firefox'],
+            'chrome mobile ios' => ['Chrome Mobile iOS', 'Chrome'],
+            'chrome mobile' => ['Chrome Mobile', 'Chrome'],
+            'chrome mobile webview' => ['Chrome Mobile WebView', 'Chrome WebView'],
+            'google chrome embedded webview' => ['Google Chrome Embedded WebView', 'Chrome WebView'],
+            'edge mobile' => ['Edge Mobile', 'Edge'],
+            'mobile safari' => ['Mobile Safari', 'Safari'],
+            'mobile safari webview' => ['Mobile Safari UI/WKWebView', 'Safari WebView'],
+            'safari embedded webview' => ['Safari Embedded WebView', 'Safari WebView'],
+            'duckduckgo mobile' => ['DuckDuckGo Mobile', 'DuckDuckGo'],
+            'ecosia android' => ['Ecosia Android', 'Ecosia'],
+            'qq browser mobile' => ['QQ Browser Mobile', 'QQ Browser'],
+            'opera mini' => ['Opera Mini', 'Opera'],
+            'version suffix' => ['Firefox 142.0.1', 'Firefox'],
+            'unknown family' => ['Ladybird', 'Ladybird'],
         ];
     }
 }
