@@ -5,6 +5,63 @@ import 'svgmap/style';
 
 createIcons({ icons });
 
+const websiteListData = document.getElementById('website-list-data');
+
+if (websiteListData) {
+    const websites = JSON.parse(websiteListData.textContent);
+
+    document.querySelectorAll('[data-website-sparkline]').forEach((canvas) => {
+        const stats = websites[canvas.dataset.websiteSparkline];
+
+        if (! stats) {
+            return;
+        }
+
+        const color = {
+            up: '#34d399',
+            down: '#f87171',
+            flat: '#a1a1aa',
+        }[stats.trend_direction];
+
+        new Chart(canvas, {
+            type: 'line',
+            data: {
+                labels: stats.sparkline.map((_, index) => index),
+                datasets: [{
+                    data: stats.sparkline,
+                    borderColor: color,
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0,
+                    tension: 0.35,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                    tooltip: {
+                        enabled: false,
+                    },
+                },
+                scales: {
+                    x: {
+                        display: false,
+                    },
+                    y: {
+                        display: false,
+                        beginAtZero: true,
+                    },
+                },
+            },
+        });
+    });
+}
+
 const dashboardData = document.getElementById('analytics-dashboard-data');
 
 if (dashboardData) {
