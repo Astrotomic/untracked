@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  sort-package-json:
+  normalize:
     runs-on: ubuntu-latest
 
     steps:
