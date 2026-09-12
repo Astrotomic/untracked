@@ -114,11 +114,52 @@ class WebsiteManagementTest extends TestCase
         $this->get(route('websites.show', $website))
             ->assertOk()
             ->assertSee('Requests over time')
+            ->assertSee('Bot requests')
             ->assertSee('"human":7', false)
             ->assertSee('"bot":3', false)
+            ->assertSee('"shouldTrackBots":true', false)
             ->assertSee('requests-chart', false)
             ->assertSee('country-map', false)
             ->assertSee('analytics-dashboard-data', false);
+    }
+
+    public function test_bot_analytics_are_hidden_when_bot_tracking_is_disabled(): void
+    {
+        $this->withoutVite();
+        $this->actingAs(User::factory()->create());
+
+        $website = Website::query()->create([
+            'name' => 'gummibeer.dev',
+            'domain' => 'gummibeer.dev',
+            'timezone' => 'Europe/Berlin',
+            'should_track_bots' => false,
+        ]);
+
+        $date = now($website->timezone)->toDateString();
+
+        DailyMetric::query()->insert([
+            [
+                'website_uuid' => $website->getKey(),
+                'date' => $date,
+                'metric' => Metric::Path->value,
+                'value' => '/',
+                'count' => 10,
+            ],
+            [
+                'website_uuid' => $website->getKey(),
+                'date' => $date,
+                'metric' => Metric::Device->value,
+                'value' => Device::Bot->value,
+                'count' => 3,
+            ],
+        ]);
+
+        $this->get(route('websites.show', $website))
+            ->assertOk()
+            ->assertDontSee('Bot requests')
+            ->assertSee('"human":7', false)
+            ->assertDontSee('"bot":3', false)
+            ->assertSee('"shouldTrackBots":false', false);
     }
 
     public function test_authenticated_users_can_create_websites(): void
