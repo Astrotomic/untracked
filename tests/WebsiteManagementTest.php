@@ -140,4 +140,30 @@ class WebsiteManagementTest extends TestCase
         $this->assertFalse(Schema::hasColumn('websites', 'id'));
         $this->assertTrue($website->should_track_bots);
     }
+
+    public function test_authenticated_users_can_update_a_website_without_changing_its_domain(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $website = Website::query()->create([
+            'name' => 'Untracked Test',
+            'domain' => 'untracked.test',
+            'timezone' => 'UTC',
+            'should_track_bots' => true,
+        ]);
+
+        $this->put(route('websites.update', $website), [
+            'name' => 'Updated Test',
+            'domain' => 'untracked.test',
+            'timezone' => 'Europe/Berlin',
+            'should_track_bots' => '0',
+        ])->assertRedirect(route('websites.show', $website));
+
+        $website->refresh();
+
+        $this->assertSame('Updated Test', $website->name);
+        $this->assertSame('untracked.test', $website->domain);
+        $this->assertSame('Europe/Berlin', $website->timezone);
+        $this->assertFalse($website->should_track_bots);
+    }
 }
