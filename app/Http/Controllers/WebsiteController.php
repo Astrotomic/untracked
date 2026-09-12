@@ -59,12 +59,12 @@ class WebsiteController extends Controller
                 $pathRequests = $metrics
                     ->where('metric', Metric::Path->value)
                     ->mapWithKeys(fn (DailyMetric $metric): array => [
-                        (string) $metric->date => $metric->count,
+                        (string) $metric->getRawOriginal('date') => $metric->count,
                     ]);
                 $botRequests = $metrics
                     ->where('metric', Metric::Device->value)
                     ->mapWithKeys(fn (DailyMetric $metric): array => [
-                        (string) $metric->date => $metric->count,
+                        (string) $metric->getRawOriginal('date') => $metric->count,
                     ]);
 
                 $humanRequests = function (CarbonImmutable $date) use ($pathRequests, $botRequests): int {
