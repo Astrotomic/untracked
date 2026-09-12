@@ -154,17 +154,21 @@ class WebsiteController extends Controller
             ->pluck('total', 'date');
 
         $trend = collect(range(0, $days - 1))
-            ->map(function (int $offset) use ($dailyRequests, $dailyBotRequests, $from): array {
+            ->map(function (int $offset) use ($dailyRequests, $dailyBotRequests, $from, $website): array {
                 $date = $from->copy()->addDays($offset);
                 $requests = (int) $dailyRequests->get($date->toDateString(), 0);
                 $bots = (int) $dailyBotRequests->get($date->toDateString(), 0);
-
-                return [
+                $point = [
                     'date' => $date->toDateString(),
                     'label' => $date->format('M j'),
                     'human' => max(0, $requests - $bots),
-                    'bot' => $bots,
                 ];
+
+                if ($website->should_track_bots) {
+                    $point['bot'] = $bots;
+                }
+
+                return $point;
             });
 
         $requests = (int) $metrics->get(Metric::Path->value)?->sum(fn (DailyMetric $metric) => $metric->count);
@@ -174,6 +178,10 @@ class WebsiteController extends Controller
         $botRequests = (int) $deviceMetrics
             ->where('value', Device::Bot->value)
             ->sum(fn (DailyMetric $metric) => $metric->count);
+
+        if (! $website->should_track_bots) {
+            $requests = max(0, $requests - $botRequests);
+        }
 
         $countryValues = $metrics->get(Metric::Country->value)
             ?->mapWithKeys(fn (DailyMetric $metric): array => [
