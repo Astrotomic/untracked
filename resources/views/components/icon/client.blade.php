@@ -1,1 +1,4 @@
-<x-icon.favicon :domain="$domain" {{ $attributes }} />
+<x-icon.favicon
+    :domain="$domain"
+    {{ $attributes }}
+/>

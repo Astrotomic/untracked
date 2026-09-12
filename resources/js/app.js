@@ -13,7 +13,7 @@ if (websiteListData) {
     document.querySelectorAll('[data-website-sparkline]').forEach((canvas) => {
         const stats = websites[canvas.dataset.websiteSparkline];
 
-        if (! stats) {
+        if (!stats) {
             return;
         }
 
@@ -27,14 +27,16 @@ if (websiteListData) {
             type: 'line',
             data: {
                 labels: stats.sparkline.map((_, index) => index),
-                datasets: [{
-                    data: stats.sparkline,
-                    borderColor: color,
-                    borderWidth: 2,
-                    fill: false,
-                    pointRadius: 0,
-                    tension: 0.35,
-                }],
+                datasets: [
+                    {
+                        data: stats.sparkline,
+                        borderColor: color,
+                        borderWidth: 2,
+                        fill: false,
+                        pointRadius: 0,
+                        tension: 0.35,
+                    },
+                ],
             },
             options: {
                 responsive: true,

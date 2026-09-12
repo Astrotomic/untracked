@@ -36,7 +36,11 @@
 
     <div class="flex flex-wrap items-start justify-between gap-6">
         <div>
-            <a href="{{ route('websites.index') }}" class="text-sm text-zinc-500 hover:text-zinc-300">← Websites</a>
+            <a
+                href="{{ route('websites.index') }}"
+                class="text-sm text-zinc-500 hover:text-zinc-300"
+                >← Websites</a
+            >
             <div class="mt-4 flex flex-wrap items-center gap-3">
                 <h1 class="text-3xl font-semibold tracking-tight">{{ $website->name }}</h1>
                 <span class="rounded-full border border-zinc-800 bg-zinc-900 px-2.5 py-1 text-xs text-zinc-400">{{ $website->should_track_bots ? 'Bots included' : 'Bots rejected' }}</span>
@@ -44,12 +48,20 @@
             <p class="mt-1 text-zinc-500">{{ $website->domain }} · {{ $website->timezone }}</p>
         </div>
 
-        <a href="{{ route('websites.edit', $website) }}" class="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition hover:border-zinc-500 hover:text-white">Settings</a>
+        <a
+            href="{{ route('websites.edit', $website) }}"
+            class="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+            >Settings</a
+        >
     </div>
 
     <div class="mt-8 flex flex-wrap items-center gap-2">
         @foreach ([7, 30, 90, 365] as $range)
-            <a href="{{ route('websites.show', [$website, 'days' => $range]) }}" class="rounded-full px-3 py-1.5 text-sm transition {{ $days === $range ? 'bg-white text-zinc-950' : 'bg-zinc-900 text-zinc-400 hover:text-white' }}">{{ $range }} days</a>
+            <a
+                href="{{ route('websites.show', [$website, 'days' => $range]) }}"
+                class="rounded-full px-3 py-1.5 text-sm transition {{ $days === $range ? 'bg-white text-zinc-950' : 'bg-zinc-900 text-zinc-400 hover:text-white' }}"
+                >{{ $range }} days</a
+            >
         @endforeach
     </div>
 
@@ -62,7 +74,7 @@
                         <x-icon.lucide :name="$item['icon']" />
                     </span>
                 </div>
-                <p class="mt-5 text-3xl font-semibold tabular-nums tracking-tight">{{ number_format($item['value']) }}</p>
+                <p class="mt-5 text-3xl font-semibold tracking-tight tabular-nums">{{ number_format($item['value']) }}</p>
             </section>
         @endforeach
     </div>
@@ -92,13 +104,16 @@
                     <p class="text-sm text-zinc-500">Request distribution by resolved country.</p>
                 </div>
             </div>
-            <div id="country-map" class="mt-6 min-h-80"></div>
+            <div
+                id="country-map"
+                class="mt-6 min-h-80"
+            ></div>
         </section>
 
         <section class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 sm:p-6">
             <div class="flex items-center justify-between gap-4">
                 <h2 class="font-medium">Top countries</h2>
-                <span class="text-xs tabular-nums text-zinc-500">{{ number_format((int) $countries->sum('count')) }} resolved</span>
+                <span class="text-xs text-zinc-500 tabular-nums">{{ number_format((int) $countries->sum('count')) }} resolved</span>
             </div>
 
             <div class="mt-5 space-y-3">
@@ -110,12 +125,19 @@
                         <div class="mb-1.5 flex items-center justify-between gap-4 text-sm">
                             <span class="flex min-w-0 items-center gap-2.5 font-medium text-zinc-300">
                                 <x-icon.country :country="$row->value" />
-                                <span class="truncate" title="{{ $row->value }}">{{ $countryName($row->value) }}</span>
+                                <span
+                                    class="truncate"
+                                    title="{{ $row->value }}"
+                                    >{{ $countryName($row->value) }}</span
+                                >
                             </span>
-                            <span class="shrink-0 tabular-nums text-zinc-500">{{ number_format($row->count) }} · {{ number_format($percentage, 1) }}%</span>
+                            <span class="shrink-0 text-zinc-500 tabular-nums">{{ number_format($row->count) }} · {{ number_format($percentage, 1) }}%</span>
                         </div>
                         <div class="h-1.5 overflow-hidden rounded-full bg-zinc-800">
-                            <div class="h-full rounded-full bg-zinc-300" style="width: {{ min(100, $percentage) }}%"></div>
+                            <div
+                                class="h-full rounded-full bg-zinc-300"
+                                style="width: {{ min(100, $percentage) }}%"
+                            ></div>
                         </div>
                     </div>
                 @empty
@@ -137,7 +159,7 @@
                         <span class="rounded-lg bg-zinc-800/80 p-2 text-zinc-400"><x-icon.lucide :name="$config['icon']" /></span>
                         <h2 class="font-medium">{{ $config['label'] }}</h2>
                     </div>
-                    <span class="text-xs tabular-nums text-zinc-600">{{ number_format((int) $rows->sum('count')) }}</span>
+                    <span class="text-xs text-zinc-600 tabular-nums">{{ number_format((int) $rows->sum('count')) }}</span>
                 </div>
 
                 <div class="mt-5 space-y-2.5">
@@ -146,9 +168,15 @@
                             $percentage = ($row->count / $total) * 100;
                         @endphp
                         <div class="relative overflow-hidden rounded-lg bg-zinc-950/50">
-                            <div class="absolute inset-y-0 left-0 bg-zinc-800/60" style="width: {{ min(100, $percentage) }}%"></div>
+                            <div
+                                class="absolute inset-y-0 left-0 bg-zinc-800/60"
+                                style="width: {{ min(100, $percentage) }}%"
+                            ></div>
                             <div class="relative flex items-center justify-between gap-4 px-3 py-2.5 text-sm">
-                                <span class="flex min-w-0 items-center gap-2.5 text-zinc-300" title="{{ $row->value }}">
+                                <span
+                                    class="flex min-w-0 items-center gap-2.5 text-zinc-300"
+                                    title="{{ $row->value }}"
+                                >
                                     @if ($metric === 'client')
                                         <x-icon.client :client="$row->value" />
                                     @elseif ($metric === 'referrer')
@@ -156,7 +184,7 @@
                                     @endif
                                     <span class="truncate">{{ $row->value }}</span>
                                 </span>
-                                <span class="shrink-0 tabular-nums text-zinc-500">{{ number_format($row->count) }} <span class="text-zinc-700">·</span> {{ number_format($percentage, 1) }}%</span>
+                                <span class="shrink-0 text-zinc-500 tabular-nums">{{ number_format($row->count) }} <span class="text-zinc-700">·</span> {{ number_format($percentage, 1) }}%</span>
                             </div>
                         </div>
                     @empty
@@ -193,5 +221,10 @@
         </div>
     </details>
 
-    <script type="application/json" id="analytics-dashboard-data">@json($dashboardData)</script>
+    <script
+        type="application/json"
+        id="analytics-dashboard-data"
+    >
+        @json($dashboardData)
+    </script>
 </x-layouts.app>
