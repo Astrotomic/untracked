@@ -116,14 +116,18 @@
                 <span class="text-xs text-zinc-500 tabular-nums">{{ number_format((int) $countries->sum('count')) }} resolved</span>
             </div>
 
-            <div class="mt-5 space-y-3">
+            <div class="mt-5 space-y-2.5">
                 @forelse ($countries->take(10) as $row)
                     @php
                         $percentage = ($row->count / $countryTotal) * 100;
                     @endphp
-                    <div>
-                        <div class="mb-1.5 flex items-center justify-between gap-4 text-sm">
-                            <span class="flex min-w-0 items-center gap-2.5 font-medium text-zinc-300">
+                    <div class="relative overflow-hidden rounded-lg bg-zinc-950/50">
+                        <div
+                            class="absolute inset-y-0 left-0 bg-zinc-800/60"
+                            style="width: {{ min(100, $percentage) }}%"
+                        ></div>
+                        <div class="relative flex items-center justify-between gap-4 px-3 py-2.5 text-sm">
+                            <span class="flex min-w-0 items-center gap-2.5 text-zinc-300">
                                 <x-icon.country :country="$row->value" />
                                 <span
                                     class="truncate"
@@ -131,17 +135,11 @@
                                     >{{ $countryName($row->value) }}</span
                                 >
                             </span>
-                            <span class="shrink-0 text-zinc-500 tabular-nums">{{ number_format($row->count) }} · {{ number_format($percentage, 1) }}%</span>
-                        </div>
-                        <div class="h-1.5 overflow-hidden rounded-full bg-zinc-800">
-                            <div
-                                class="h-full rounded-full bg-zinc-300"
-                                style="width: {{ min(100, $percentage) }}%"
-                            ></div>
+                            <span class="shrink-0 text-zinc-500 tabular-nums">{{ number_format($row->count) }} <span class="text-zinc-700">·</span> {{ number_format($percentage, 1) }}%</span>
                         </div>
                     </div>
                 @empty
-                    <div class="flex min-h-48 items-center justify-center text-sm text-zinc-600">No country data yet.</div>
+                    <div class="rounded-lg bg-zinc-950/50 px-3 py-2.5 text-sm text-zinc-600">No country data yet.</div>
                 @endforelse
             </div>
         </section>
