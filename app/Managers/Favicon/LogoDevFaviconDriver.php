@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Drivers\Favicon;
+namespace App\Managers\Favicon;
 
 use App\Contracts\FaviconDriver;
 use RuntimeException;

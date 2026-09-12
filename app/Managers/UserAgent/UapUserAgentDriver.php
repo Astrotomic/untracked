@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Drivers\UserAgent;
+namespace App\Managers\UserAgent;
 
 use App\Contracts\UserAgentDriver;
 use App\Enums\Device;

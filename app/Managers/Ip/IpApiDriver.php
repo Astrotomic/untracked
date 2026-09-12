@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Drivers\Ip;
+namespace App\Managers\Ip;
 
 use App\Contracts\IpDriver;
 use App\Normalizers\CountryNormalizer;

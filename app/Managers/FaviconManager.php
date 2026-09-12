@@ -4,10 +4,10 @@ namespace App\Managers;
 
 use App\Concerns\Resolvable;
 use App\Contracts\FaviconDriver;
-use App\Drivers\Favicon\DuckDuckGoFaviconDriver;
-use App\Drivers\Favicon\GoogleFaviconDriver;
-use App\Drivers\Favicon\LogoDevFaviconDriver;
-use App\Drivers\Favicon\UnavatarFaviconDriver;
+use App\Managers\Favicon\DuckDuckGoFaviconDriver;
+use App\Managers\Favicon\GoogleFaviconDriver;
+use App\Managers\Favicon\LogoDevFaviconDriver;
+use App\Managers\Favicon\UnavatarFaviconDriver;
 use Illuminate\Support\Manager;
 
 final class FaviconManager extends Manager

@@ -20,6 +20,7 @@
         "ua-parser/uap-php": "^3.10"
     },
     "require-dev": {
+        "astrotomic/phpunit-assertions": "^0.14.0",
         "fakerphp/faker": "^1.24.1",
         "larastan/larastan": "^3.12",
         "laravel/pint": "^1.32.1",

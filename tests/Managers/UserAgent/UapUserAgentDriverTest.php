@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Drivers\UserAgent;
+namespace Managers\UserAgent;
 
-use App\Drivers\UserAgent\UapUserAgentDriver;
 use App\Enums\Device;
+use App\Managers\UserAgent\UapUserAgentDriver;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -11,17 +11,11 @@ use UAParser\Parser;
 
 class UapUserAgentDriverTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        $this->driver = new UapUserAgentDriver(Parser::create());
-
-        parent::setUp();
-    }
-
     #[DataProvider('userAgentsProvider')]
     public function test_useragent_parsing(string $userAgentString, ?string $client, ?string $os, Device $device, bool $isBot): void
     {
-        $userAgent = $this->driver->resolve($userAgentString);
+        $driver = new UapUserAgentDriver(Parser::create());
+        $userAgent = $driver->resolve($userAgentString);
 
         Assert::assertSame($client, $userAgent->client);
         Assert::assertSame($os, $userAgent->os);

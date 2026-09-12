@@ -4,7 +4,7 @@ namespace App\Managers;
 
 use App\Concerns\Resolvable;
 use App\Contracts\UserAgentDriver;
-use App\Drivers\UserAgent\UapUserAgentDriver;
+use App\Managers\UserAgent\UapUserAgentDriver;
 use Illuminate\Support\Manager;
 use UAParser\Parser;
 

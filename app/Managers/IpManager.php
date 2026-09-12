@@ -4,8 +4,8 @@ namespace App\Managers;
 
 use App\Concerns\Resolvable;
 use App\Contracts\IpDriver;
-use App\Drivers\Ip\IpApiDriver;
-use App\Drivers\Ip\MaxMindIpDriver;
+use App\Managers\Ip\IpApiDriver;
+use App\Managers\Ip\MaxMindIpDriver;
 use Illuminate\Support\Manager;
 
 final class IpManager extends Manager

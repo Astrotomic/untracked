@@ -2,7 +2,7 @@
 
 namespace Tests\Managers;
 
-use App\Drivers\Favicon\DuckDuckGoFaviconDriver;
+use App\Managers\Favicon\DuckDuckGoFaviconDriver;
 use App\Managers\FaviconManager;
 use PHPUnit\Framework\Assert;
 use Tests\TestCase;
