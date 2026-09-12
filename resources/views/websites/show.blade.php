@@ -152,7 +152,7 @@
                             </div>
                         </div>
                     @empty
-                        <div class="flex min-h-36 items-center justify-center text-sm text-zinc-600">No data yet.</div>
+                        <div class="rounded-lg bg-zinc-950/50 px-3 py-2.5 text-sm text-zinc-600">No data yet.</div>
                     @endforelse
                 </div>
             </section>
