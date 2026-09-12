@@ -4,8 +4,11 @@
             ['label' => 'Requests', 'value' => $requests, 'icon' => 'activity'],
             ['label' => 'Paths', 'value' => $pathCount, 'icon' => 'file-text'],
             ['label' => 'Countries', 'value' => $countryCount, 'icon' => 'globe-2'],
-            ['label' => 'Bot requests', 'value' => $botRequests, 'icon' => 'bot'],
         ];
+
+        if ($website->should_track_bots) {
+            $summary[] = ['label' => 'Bot requests', 'value' => $botRequests, 'icon' => 'bot'];
+        }
 
         $breakdowns = [
             'path' => ['label' => 'Paths', 'icon' => 'file-text'],
@@ -45,7 +48,7 @@
         @endforeach
     </div>
 
-    <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="mt-6 grid gap-4 sm:grid-cols-2 {{ $website->should_track_bots ? 'xl:grid-cols-4' : 'xl:grid-cols-3' }}">
         @foreach ($summary as $item)
             <section class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
                 <div class="flex items-center justify-between gap-4">
@@ -188,5 +191,6 @@
     <script type="application/json" id="analytics-dashboard-data">@json([
         'trend' => $trend,
         'countries' => $countryValues,
+        'shouldTrackBots' => $website->should_track_bots,
     ])</script>
 </x-layouts.app>
