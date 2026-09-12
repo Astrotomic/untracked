@@ -27,6 +27,11 @@
         $countries = $metrics->get('country') ?? collect();
         $countryTotal = max(1, (int) $countries->sum('count'));
         $countryName = static fn (string $country): string => \Locale::getDisplayRegion('und_'.strtoupper($country), 'en') ?: strtoupper($country);
+        $dashboardData = [
+            'trend' => $trend,
+            'countries' => $countryValues,
+            'shouldTrackBots' => $website->should_track_bots,
+        ];
     @endphp
 
     <div class="flex flex-wrap items-start justify-between gap-6">
@@ -188,9 +193,5 @@
         </div>
     </details>
 
-    <script type="application/json" id="analytics-dashboard-data">@json([
-        'trend' => $trend,
-        'countries' => $countryValues,
-        'shouldTrackBots' => $website->should_track_bots,
-    ])</script>
+    <script type="application/json" id="analytics-dashboard-data">@json($dashboardData)</script>
 </x-layouts.app>
