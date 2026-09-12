@@ -65,40 +65,45 @@ if (websiteListData) {
 const dashboardData = document.getElementById('analytics-dashboard-data');
 
 if (dashboardData) {
-    const { trend, countries } = JSON.parse(dashboardData.textContent);
+    const { trend, countries, shouldTrackBots } = JSON.parse(dashboardData.textContent);
     const chart = document.getElementById('requests-chart');
 
     if (chart) {
+        const datasets = [
+            {
+                label: 'Human',
+                data: trend.map((point) => point.human),
+                borderColor: '#e4e4e7',
+                backgroundColor: '#e4e4e7',
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 0,
+                pointHoverRadius: 4,
+                pointBackgroundColor: '#fafafa',
+                tension: 0.35,
+            },
+        ];
+
+        if (shouldTrackBots) {
+            datasets.push({
+                label: 'Bots',
+                data: trend.map((point) => point.bot),
+                borderColor: '#f59e0b',
+                backgroundColor: '#f59e0b',
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 0,
+                pointHoverRadius: 4,
+                pointBackgroundColor: '#fbbf24',
+                tension: 0.35,
+            });
+        }
+
         new Chart(chart, {
             type: 'line',
             data: {
                 labels: trend.map((point) => point.label),
-                datasets: [
-                    {
-                        label: 'Human',
-                        data: trend.map((point) => point.human),
-                        borderColor: '#e4e4e7',
-                        backgroundColor: '#e4e4e7',
-                        borderWidth: 2,
-                        fill: false,
-                        pointRadius: 0,
-                        pointHoverRadius: 4,
-                        pointBackgroundColor: '#fafafa',
-                        tension: 0.35,
-                    },
-                    {
-                        label: 'Bots',
-                        data: trend.map((point) => point.bot),
-                        borderColor: '#f59e0b',
-                        backgroundColor: '#f59e0b',
-                        borderWidth: 2,
-                        fill: false,
-                        pointRadius: 0,
-                        pointHoverRadius: 4,
-                        pointBackgroundColor: '#fbbf24',
-                        tension: 0.35,
-                    },
-                ],
+                datasets,
             },
             options: {
                 responsive: true,
@@ -109,6 +114,7 @@ if (dashboardData) {
                 },
                 plugins: {
                     legend: {
+                        display: shouldTrackBots,
                         labels: {
                             color: '#a1a1aa',
                             usePointStyle: true,
