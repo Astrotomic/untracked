@@ -1,7 +1,7 @@
 import Chart from 'chart.js/auto';
 import { createIcons, icons } from 'lucide';
 import svgMap from 'svgmap';
-import 'svgmap/dist/svg-map.css';
+import 'svgmap/style';
 
 createIcons({ icons });
 
@@ -23,8 +23,10 @@ if (dashboardData) {
                         borderColor: '#e4e4e7',
                         backgroundColor: '#e4e4e7',
                         borderWidth: 2,
+                        fill: false,
                         pointRadius: 0,
                         pointHoverRadius: 4,
+                        pointBackgroundColor: '#fafafa',
                         tension: 0.35,
                     },
                     {
@@ -33,8 +35,10 @@ if (dashboardData) {
                         borderColor: '#f59e0b',
                         backgroundColor: '#f59e0b',
                         borderWidth: 2,
+                        fill: false,
                         pointRadius: 0,
                         pointHoverRadius: 4,
+                        pointBackgroundColor: '#fbbf24',
                         tension: 0.35,
                     },
                 ],
@@ -48,8 +52,6 @@ if (dashboardData) {
                 },
                 plugins: {
                     legend: {
-                        display: true,
-                        align: 'end',
                         labels: {
                             color: '#a1a1aa',
                             usePointStyle: true,
@@ -59,7 +61,7 @@ if (dashboardData) {
                     tooltip: {
                         callbacks: {
                             title: (items) => trend[items[0].dataIndex].date,
-                            label: (context) => `${context.dataset.label}: ${context.parsed.y.toLocaleString()}`,
+                            label: (context) => `${context.dataset.label}: ${context.parsed.y.toLocaleString()} requests`,
                         },
                     },
                 },
