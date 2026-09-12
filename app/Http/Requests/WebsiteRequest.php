@@ -27,7 +27,7 @@ class WebsiteRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('websites', 'domain')->ignore($website?->getKey()),
+                Rule::unique('websites', 'domain')->ignore($website),
             ],
             'timezone' => ['required', 'timezone'],
             'should_track_bots' => ['required', 'boolean'],

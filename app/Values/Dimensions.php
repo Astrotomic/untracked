@@ -15,6 +15,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use JsonSerializable;
 
+/** @implements Arrayable<string, mixed> */
 final readonly class Dimensions implements Arrayable, Jsonable, JsonSerializable
 {
     public static function fromRaw(
@@ -119,7 +120,7 @@ final readonly class Dimensions implements Arrayable, Jsonable, JsonSerializable
 
         $client = $userAgent->client;
 
-        if ($client === null || $client === '' || in_array(strtolower($client), ['bot', 'other'], true)) {
+        if ($client === null || $client === '' || in_array(strtolower($client), [strtolower(Client::BOT), strtolower(Client::OTHER)], true)) {
             $client = null;
         }
 
@@ -130,6 +131,7 @@ final readonly class Dimensions implements Arrayable, Jsonable, JsonSerializable
         );
     }
 
+    /** @return array<string, mixed> */
     public function toArray(): array
     {
         return [
@@ -151,6 +153,7 @@ final readonly class Dimensions implements Arrayable, Jsonable, JsonSerializable
         ];
     }
 
+    /** @return array<string, mixed> */
     public function jsonSerialize(): array
     {
         return $this->toArray();

@@ -98,7 +98,11 @@ Bot traffic is reduced differently. Once the User-Agent is recognized as a bot, 
 The bundled browser script uses this endpoint:
 
 ```html
-<script defer data-website-id="YOUR_WEBSITE_UUID" src="https://analytics.example.com/script.js"></script>
+<script
+    defer
+    data-website-id="YOUR_WEBSITE_UUID"
+    src="https://analytics.example.com/script.js"
+></script>
 ```
 
 The script deliberately does no analytics parsing itself. It posts `window.location.href` and `document.referrer` and leaves all reduction to Untracked. That means the full page URL and referrer reach the Untracked server transiently, but neither is persisted as analytics data.
@@ -115,18 +119,18 @@ Use this from a backend that already reduced the request itself. This endpoint n
 
 ```json
 {
-  "path": "/blog/example",
-  "country": "DE",
-  "client": "Firefox",
-  "os": "Linux",
-  "device": "desktop",
-  "format": "markdown",
-  "referrer": "news.ycombinator.com",
-  "utm_source": "newsletter",
-  "utm_medium": "email",
-  "utm_campaign": "launch",
-  "utm_term": "privacy analytics",
-  "utm_content": "hero-link"
+    "path": "/blog/example",
+    "country": "DE",
+    "client": "Firefox",
+    "os": "Linux",
+    "device": "desktop",
+    "format": "markdown",
+    "referrer": "news.ycombinator.com",
+    "utm_source": "newsletter",
+    "utm_medium": "email",
+    "utm_campaign": "launch",
+    "utm_term": "privacy analytics",
+    "utm_content": "hero-link"
 }
 ```
 

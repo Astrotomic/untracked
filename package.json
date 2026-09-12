@@ -1,21 +1,32 @@
 {
     "$schema": "https://www.schemastore.org/package.json",
+    "name": "@astrotomic/untracked",
+    "version": "0.0.0",
     "private": true,
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "format": "prettier --write \"resources/**/*.{blade.php,css,js}\" \".github/**/*.{yml,yaml}\" \"*.{json,md,yml,yaml}\"",
+        "format:check": "prettier --check \"resources/**/*.{blade.php,css,js}\" \".github/**/*.{yml,yaml}\" \"*.{json,md,yml,yaml}\"",
+        "normalize": "npm pkg fix && npx sort-package-json"
+    },
+    "dependencies": {
+        "chart.js": "^4.5.1",
+        "lucide": "^1.45.0",
+        "svgmap": "^2.21.0",
+        "tailwindcss": "^4.0.0"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
         "concurrently": "^10.0.3",
         "laravel-vite-plugin": "^3.1",
+        "prettier": "^3.9.6",
+        "prettier-plugin-blade": "^3.3.0",
+        "prettier-plugin-tailwindcss": "^0.8.1",
         "vite": "^8.0.0"
     },
     "optionalDependencies": {
         "@laravel/multiplex": "^0.4.1"
-    },
-    "dependencies": {
-        "tailwindcss": "^4.0.0"
     }
 }
