@@ -27,6 +27,59 @@ class WebsiteManagementTest extends TestCase
         $this->get('/websites')->assertOk();
     }
 
+    public function test_website_list_shows_useful_human_traffic_insights(): void
+    {
+        $this->withoutVite();
+        $this->actingAs(User::factory()->create());
+
+        $website = Website::query()->create([
+            'name' => 'gummibeer.dev',
+            'domain' => 'gummibeer.dev',
+            'timezone' => 'UTC',
+            'should_track_bots' => true,
+        ]);
+
+        $today = now('UTC')->startOfDay();
+        $rows = [];
+
+        foreach (range(0, 14) as $offset) {
+            $date = $today->copy()->subDays($offset)->toDateString();
+            $human = match (true) {
+                $offset === 0 => 6,
+                $offset <= 7 => 2,
+                default => 1,
+            };
+            $bots = $offset === 0 ? 2 : 1;
+
+            $rows[] = [
+                'website_uuid' => $website->getKey(),
+                'date' => $date,
+                'metric' => Metric::Path->value,
+                'value' => '/',
+                'count' => $human + $bots,
+            ];
+            $rows[] = [
+                'website_uuid' => $website->getKey(),
+                'date' => $date,
+                'metric' => Metric::Device->value,
+                'value' => Device::Bot->value,
+                'count' => $bots,
+            ];
+        }
+
+        DailyMetric::query()->insert($rows);
+
+        $this->get(route('websites.index'))
+            ->assertOk()
+            ->assertSee('human today')
+            ->assertSee('7d trend')
+            ->assertSee('"today":6', false)
+            ->assertSee('"sparkline":[2,2,2,2,2,2,6]', false)
+            ->assertSee('"trend_direction":"up"', false)
+            ->assertSee('"trend_percentage":100', false)
+            ->assertSee('website-list-data', false);
+    }
+
     public function test_authenticated_users_can_open_a_website_dashboard(): void
     {
         $this->withoutVite();
