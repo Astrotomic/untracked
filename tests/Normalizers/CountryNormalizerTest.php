@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use League\ISO3166\ISO3166;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class CountryNormalizerTest extends TestCase
@@ -20,8 +21,9 @@ class CountryNormalizerTest extends TestCase
         parent::setUp();
     }
 
+    #[Test]
     #[DataProvider('countryProvider')]
-    public function test_it_normalizes_lowercase_country_values(string $value, ?string $expected): void
+    public function it_normalizes_lowercase_country_values(string $value, ?string $expected): void
     {
         $country = $this->normalizer->normalize(Str::lower($value));
 
@@ -32,8 +34,9 @@ class CountryNormalizerTest extends TestCase
         Assert::assertSame($expected, $country);
     }
 
+    #[Test]
     #[DataProvider('countryProvider')]
-    public function test_it_normalizes_uppercase_country_values(string $value, ?string $expected): void
+    public function it_normalizes_uppercase_country_values(string $value, ?string $expected): void
     {
         $country = $this->normalizer->normalize(Str::upper($value));
 

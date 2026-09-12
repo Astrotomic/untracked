@@ -5,12 +5,14 @@ namespace Managers\Favicon;
 use App\Managers\Favicon\LogoDevFaviconDriver;
 use Astrotomic\PhpunitAssertions\UrlAssertions;
 use PHPUnit\Framework\Assert;
+use PHPUnit\Framework\Attributes\Test;
 use RuntimeException;
 use Tests\TestCase;
 
 class LogoDevFaviconDriverTest extends TestCase
 {
-    public function test_it_builds_favicon_urls(): void
+    #[Test]
+    public function it_builds_favicon_urls(): void
     {
         $driver = new LogoDevFaviconDriver('secret');
         $favicon = $driver->url('google.com');
@@ -22,7 +24,8 @@ class LogoDevFaviconDriverTest extends TestCase
         );
     }
 
-    public function test_it_requires_a_token(): void
+    #[Test]
+    public function it_requires_a_token(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('The Logo.dev favicon driver requires LOGO_DEV_TOKEN.');
