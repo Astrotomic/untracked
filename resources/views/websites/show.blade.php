@@ -95,7 +95,9 @@
 
             <div class="mt-5 space-y-3">
                 @forelse ($countries->take(10) as $row)
-                    @php($percentage = ($row->count / $countryTotal) * 100)
+                    @php
+                        $percentage = ($row->count / $countryTotal) * 100;
+                    @endphp
                     <div>
                         <div class="mb-1.5 flex items-center justify-between gap-4 text-sm">
                             <span class="flex min-w-0 items-center gap-2.5 font-medium text-zinc-300">
@@ -132,7 +134,9 @@
 
                 <div class="mt-5 space-y-2.5">
                     @forelse ($rows->take(8) as $row)
-                        @php($percentage = ($row->count / $total) * 100)
+                        @php
+                            $percentage = ($row->count / $total) * 100;
+                        @endphp
                         <div class="relative overflow-hidden rounded-lg bg-zinc-950/50">
                             <div class="absolute inset-y-0 left-0 bg-zinc-800/60" style="width: {{ min(100, $percentage) }}%"></div>
                             <div class="relative flex items-center justify-between gap-4 px-3 py-2.5 text-sm">
