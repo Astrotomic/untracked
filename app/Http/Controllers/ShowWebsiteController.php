@@ -20,11 +20,11 @@ class ShowWebsiteController
 
         $today = now($website->timezone)->startOfDay();
         $from = $today->copy()->subDays($days - 1);
-        $tracksPath = $website->tracks(Metric::Path);
-        $tracksCountry = $website->tracks(Metric::Country);
-        $tracksDevice = $website->tracks(Metric::Device);
-        $showsBotTraffic = $website->should_track_bots && $tracksDevice;
-        $showsHumanTraffic = ! $website->should_track_bots || $tracksDevice;
+        $isTrackingPath = $website->isTracking(Metric::Path);
+        $isTrackingCountry = $website->isTracking(Metric::Country);
+        $isTrackingDevice = $website->isTracking(Metric::Device);
+        $showsBotTraffic = $website->should_track_bots && $isTrackingDevice;
+        $showsHumanTraffic = ! $website->should_track_bots || $isTrackingDevice;
 
         $query = DailyMetric::query()
             ->where('website_uuid', $website->getKey())
@@ -39,7 +39,7 @@ class ShowWebsiteController
             ->groupBy('metric');
 
         /** @var Collection<string, int|string> $dailyRequests */
-        $dailyRequests = $tracksPath
+        $dailyRequests = $isTrackingPath
             ? (clone $query)
                 ->where('metric', Metric::Path->value)
                 ->selectRaw('date, SUM(count) as total')
@@ -49,7 +49,7 @@ class ShowWebsiteController
             : collect();
 
         /** @var Collection<string, int|string> $dailyBotRequests */
-        $dailyBotRequests = $tracksDevice
+        $dailyBotRequests = $isTrackingDevice
             ? (clone $query)
                 ->where('metric', Metric::Device->value)
                 ->where('value', Device::Bot->value)
@@ -77,21 +77,21 @@ class ShowWebsiteController
                 return $point;
             });
 
-        $requests = $tracksPath
+        $requests = $isTrackingPath
             ? (int) $metrics->get(Metric::Path->value)?->sum(fn (DailyMetric $metric) => $metric->count)
             : 0;
-        $pathCount = $tracksPath ? ($metrics->get(Metric::Path->value)?->count() ?? 0) : 0;
-        $countryCount = $tracksCountry ? ($metrics->get(Metric::Country->value)?->count() ?? 0) : 0;
-        $deviceMetrics = $tracksDevice ? ($metrics->get(Metric::Device->value) ?? collect()) : collect();
+        $pathCount = $isTrackingPath ? ($metrics->get(Metric::Path->value)?->count() ?? 0) : 0;
+        $countryCount = $isTrackingCountry ? ($metrics->get(Metric::Country->value)?->count() ?? 0) : 0;
+        $deviceMetrics = $isTrackingDevice ? ($metrics->get(Metric::Device->value) ?? collect()) : collect();
         $botRequests = (int) $deviceMetrics
             ->where('value', Device::Bot->value)
             ->sum(fn (DailyMetric $metric) => $metric->count);
 
-        if (! $website->should_track_bots && $tracksDevice) {
+        if (! $website->should_track_bots && $isTrackingDevice) {
             $requests = max(0, $requests - $botRequests);
         }
 
-        $countryValues = $tracksCountry
+        $countryValues = $isTrackingCountry
             ? $metrics->get(Metric::Country->value)
                 ?->mapWithKeys(fn (DailyMetric $metric): array => [
                     $metric->value => ['requests' => (int) $metric->count],
