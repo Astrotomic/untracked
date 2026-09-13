@@ -6,7 +6,7 @@ use App\Models\Website;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class RawCollectController extends Controller
+class CollectRawMetricsController
 {
     public function __invoke(Request $request, Website $website): Response
     {
