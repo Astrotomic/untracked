@@ -15,7 +15,6 @@ return new class extends Migration
 
         DB::table('websites')->update([
             'metric_preferences' => json_encode([
-                'path' => true,
                 'country' => true,
                 'client' => true,
                 'os' => true,
