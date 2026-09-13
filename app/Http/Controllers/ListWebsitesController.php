@@ -57,16 +57,13 @@ class ListWebsitesController
         $websiteStats = $websites->mapWithKeys(function (Website $website) use ($dailyMetrics, $todayByWebsite): array {
             $today = $todayByWebsite->get($website->getKey());
             $metrics = $dailyMetrics->get($website->getKey(), collect());
-            $isTrackingPath = $website->isTracking(Metric::Path);
             $isTrackingDevice = $website->isTracking(Metric::Device);
 
-            $pathRequests = $isTrackingPath
-                ? $metrics
-                    ->where('metric', Metric::Path->value)
-                    ->mapWithKeys(fn (DailyMetric $metric): array => [
-                        (string) $metric->getRawOriginal('date') => $metric->count,
-                    ])
-                : collect();
+            $pathRequests = $metrics
+                ->where('metric', Metric::Path->value)
+                ->mapWithKeys(fn (DailyMetric $metric): array => [
+                    (string) $metric->getRawOriginal('date') => $metric->count,
+                ]);
             $botRequests = $isTrackingDevice
                 ? $metrics
                     ->where('metric', Metric::Device->value)
@@ -94,7 +91,6 @@ class ListWebsitesController
 
             return [
                 $website->getKey() => [
-                    'is_tracking_path' => $isTrackingPath,
                     'today' => $requests($today),
                     'traffic_label' => $canIdentifyHumanTraffic ? 'human today' : 'requests today',
                     'sparkline' => $sparkline,
