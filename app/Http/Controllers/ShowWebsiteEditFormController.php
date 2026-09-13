@@ -9,6 +9,8 @@ class ShowWebsiteEditFormController
 {
     public function __invoke(Website $website): View
     {
-        return view('websites.edit', compact('website'));
+        return view('websites.edit', [
+            'website' => $website,
+        ]);
     }
 }
