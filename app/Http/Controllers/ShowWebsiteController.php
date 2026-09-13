@@ -86,16 +86,16 @@ class ShowWebsiteController
             ])
             ->all() ?? [];
 
-        return view('websites.show', compact(
-            'website',
-            'metrics',
-            'days',
-            'requests',
-            'pathCount',
-            'countryCount',
-            'botRequests',
-            'trend',
-            'countryValues',
-        ));
+        return view('websites.show', [
+            'website' => $website,
+            'metrics' => $metrics,
+            'days' => $days,
+            'requests' => $requests,
+            'pathCount' => $pathCount,
+            'countryCount' => $countryCount,
+            'botRequests' => $botRequests,
+            'trend' => $trend,
+            'countryValues' => $countryValues,
+        ]);
     }
 }
