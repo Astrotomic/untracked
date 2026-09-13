@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('domain')->unique();
             $table->string('timezone')->default('UTC');
             $table->boolean('should_track_bots')->default(true);
+            $table->json('metric_preferences')->nullable();
             $table->timestamps();
         });
     }
