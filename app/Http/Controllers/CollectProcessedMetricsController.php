@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 
-class ProcessedCollectController extends Controller
+class CollectProcessedMetricsController
 {
     public function __invoke(Request $request, Website $website): Response
     {

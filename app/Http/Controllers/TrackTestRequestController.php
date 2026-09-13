@@ -6,7 +6,7 @@ use App\Models\Website;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class TestController extends Controller
+class TrackTestRequestController
 {
     public function __invoke(Request $request): JsonResponse
     {
