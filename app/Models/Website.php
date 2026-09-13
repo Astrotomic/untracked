@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
 /**
- * @property array<string, bool>|null $metric_preferences
+ * @property array<string, bool> $metric_preferences
  */
 class Website extends Model
 {
@@ -30,6 +30,22 @@ class Website extends Model
             'should_track_bots' => 'boolean',
             'metric_preferences' => 'array',
         ];
+    }
+
+    /**
+     * @return array<string, bool>
+     */
+    public static function defaultMetricPreferences(): array
+    {
+        $preferences = [];
+
+        foreach (Metric::cases() as $metric) {
+            if ($metric->isConfigurable()) {
+                $preferences[$metric->value] = true;
+            }
+        }
+
+        return $preferences;
     }
 
     /**
