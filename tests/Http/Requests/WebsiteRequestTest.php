@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Requests;
 
+use App\Enums\Metric;
 use App\Models\User;
 use App\Models\Website;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,6 +24,19 @@ class WebsiteRequestTest extends TestCase
 
         $this->post(route('websites.store'), $payload)
             ->assertSessionHasErrors($field);
+
+        Assert::assertSame(0, Website::query()->count());
+    }
+
+    #[Test]
+    public function it_rejects_invalid_metric_preference_values(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $payload = $this->validPayload();
+        $payload['metric_preferences'][Metric::Country->value] = 'sometimes';
+
+        $this->post(route('websites.store'), $payload)
+            ->assertSessionHasErrors('metric_preferences.country');
 
         Assert::assertSame(0, Website::query()->count());
     }
@@ -70,6 +84,7 @@ class WebsiteRequestTest extends TestCase
             'timezone valid' => ['timezone', 'Mars/Olympus'],
             'bot tracking required' => ['should_track_bots', null],
             'bot tracking boolean' => ['should_track_bots', 'sometimes'],
+            'metric preferences array' => ['metric_preferences', 'sometimes'],
         ];
     }
 
@@ -80,6 +95,21 @@ class WebsiteRequestTest extends TestCase
             'domain' => 'example.com',
             'timezone' => 'UTC',
             'should_track_bots' => true,
+            'metric_preferences' => $this->metricPreferences(),
         ];
+    }
+
+    /**
+     * @return array<string, bool>
+     */
+    private function metricPreferences(): array
+    {
+        $preferences = [];
+
+        foreach (Metric::cases() as $metric) {
+            $preferences[$metric->value] = true;
+        }
+
+        return $preferences;
     }
 }

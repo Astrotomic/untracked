@@ -91,6 +91,45 @@ class WebsiteControllerTest extends TestCase
     }
 
     #[Test]
+    public function it_hides_disabled_metrics_from_the_dashboard(): void
+    {
+        $this->withoutVite();
+        $this->actingAs(User::factory()->create());
+        $website = $this->website();
+        $website->update([
+            'metric_preferences' => $this->metricPreferences([
+                Metric::Country->value => false,
+                Metric::Client->value => false,
+            ]),
+        ]);
+        $date = now($website->timezone)->toDateString();
+
+        DailyMetric::query()->insert([
+            [
+                'website_uuid' => $website->getKey(),
+                'date' => $date,
+                'metric' => Metric::Country->value,
+                'value' => 'DE',
+                'count' => 10,
+            ],
+            [
+                'website_uuid' => $website->getKey(),
+                'date' => $date,
+                'metric' => Metric::Client->value,
+                'value' => 'Firefox',
+                'count' => 10,
+            ],
+        ]);
+
+        $this->get(route('websites.show', $website))
+            ->assertOk()
+            ->assertDontSee('Top countries')
+            ->assertDontSee('country-map', false)
+            ->assertDontSee('Clients')
+            ->assertSee('"countries":[]', false);
+    }
+
+    #[Test]
     public function it_bot_analytics_are_hidden_when_bot_tracking_is_disabled(): void
     {
         $this->withoutVite();
@@ -153,6 +192,7 @@ class WebsiteControllerTest extends TestCase
         Assert::assertSame('gummibeer.dev', $website->domain);
         Assert::assertSame('Europe/Berlin', $website->timezone);
         Assert::assertTrue($website->should_track_bots);
+        Assert::assertSame($this->metricPreferences(), $website->metric_preferences);
     }
 
     #[Test]
@@ -170,12 +210,17 @@ class WebsiteControllerTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
         $website = $this->website();
+        $metricPreferences = array_map(
+            static fn (bool $enabled): string => $enabled ? '1' : '0',
+            $this->metricPreferences([Metric::Country->value => false]),
+        );
 
         $this->put(route('websites.update', $website), [
             'name' => 'Updated Test',
             'domain' => 'example.com',
             'timezone' => 'Europe/Berlin',
             'should_track_bots' => '0',
+            'metric_preferences' => $metricPreferences,
         ])->assertRedirect(route('websites.show', $website));
 
         $website->refresh();
@@ -184,6 +229,8 @@ class WebsiteControllerTest extends TestCase
         Assert::assertSame('example.com', $website->domain);
         Assert::assertSame('Europe/Berlin', $website->timezone);
         Assert::assertFalse($website->should_track_bots);
+        Assert::assertFalse($website->metric_preferences[Metric::Country->value]);
+        Assert::assertIsBool($website->metric_preferences[Metric::Country->value]);
     }
 
     #[Test]
@@ -206,7 +253,23 @@ class WebsiteControllerTest extends TestCase
             'domain' => 'example.com',
             'timezone' => $timezone,
             'should_track_bots' => $shouldTrackBots,
+            'metric_preferences' => $this->metricPreferences(),
         ]);
+    }
+
+    /**
+     * @param  array<string, bool>  $overrides
+     * @return array<string, bool>
+     */
+    private function metricPreferences(array $overrides = []): array
+    {
+        $preferences = [];
+
+        foreach (Metric::cases() as $metric) {
+            $preferences[$metric->value] = true;
+        }
+
+        return array_replace($preferences, $overrides);
     }
 
     private static function trafficRows(Website $website, CarbonInterface $today): array

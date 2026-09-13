@@ -4,6 +4,7 @@ namespace Tests\Models;
 
 use App\Enums\Device;
 use App\Enums\Format;
+use App\Enums\Metric;
 use App\Models\Website;
 use App\Values\Dimensions;
 use App\Values\UserAgent;
@@ -54,6 +55,41 @@ class WebsiteTest extends TestCase
     }
 
     #[Test]
+    public function it_does_not_persist_disabled_metrics(): void
+    {
+        $website = $this->website(metricPreferences: [
+            Metric::Country->value => false,
+            Metric::Client->value => false,
+            Metric::UtmCampaign->value => false,
+        ]);
+
+        $website->record(new Dimensions(
+            path: '/blog/example',
+            country: 'DE',
+            userAgent: new UserAgent('Firefox', 'Linux', Device::Desktop),
+            format: Format::Markdown,
+            referrer: 'google.com',
+            utmSource: 'newsletter',
+            utmMedium: 'email',
+            utmCampaign: 'launch',
+            utmTerm: 'privacy analytics',
+            utmContent: 'hero-link',
+        ));
+
+        DailyMetricsAssertions::assertEquals([
+            'path' => ['/blog/example' => 1],
+            'os' => ['Linux' => 1],
+            'device' => [Device::Desktop->value => 1],
+            'format' => [Format::Markdown->value => 1],
+            'referrer' => ['google.com' => 1],
+            'utm_source' => ['newsletter' => 1],
+            'utm_medium' => ['email' => 1],
+            'utm_term' => ['privacy analytics' => 1],
+            'utm_content' => ['hero-link' => 1],
+        ], $website);
+    }
+
+    #[Test]
     public function it_records_only_dimensions_with_values(): void
     {
         $website = $this->website();
@@ -87,13 +123,23 @@ class WebsiteTest extends TestCase
         DailyMetricsAssertions::assertEquals([], $website);
     }
 
-    private function website(bool $shouldTrackBots = true): Website
+    /**
+     * @param  array<string, bool>  $metricPreferences
+     */
+    private function website(bool $shouldTrackBots = true, array $metricPreferences = []): Website
     {
+        $preferences = [];
+
+        foreach (Metric::cases() as $metric) {
+            $preferences[$metric->value] = true;
+        }
+
         return Website::query()->create([
             'name' => 'Example',
             'domain' => 'example.com',
             'timezone' => 'UTC',
             'should_track_bots' => $shouldTrackBots,
+            'metric_preferences' => array_replace($preferences, $metricPreferences),
         ]);
     }
 }
