@@ -2,16 +2,16 @@
     @php
         $summary = [];
 
-        if ($website->tracks(\App\Enums\Metric::Path)) {
+        if ($website->isTracking(\App\Enums\Metric::Path)) {
             $summary[] = ['label' => 'Requests', 'value' => $requests, 'icon' => 'activity'];
             $summary[] = ['label' => 'Paths', 'value' => $pathCount, 'icon' => 'file-text'];
         }
 
-        if ($website->tracks(\App\Enums\Metric::Country)) {
+        if ($website->isTracking(\App\Enums\Metric::Country)) {
             $summary[] = ['label' => 'Countries', 'value' => $countryCount, 'icon' => 'globe-2'];
         }
 
-        if ($website->should_track_bots && $website->tracks(\App\Enums\Metric::Device)) {
+        if ($website->should_track_bots && $website->isTracking(\App\Enums\Metric::Device)) {
             $summary[] = ['label' => 'Bot requests', 'value' => $botRequests, 'icon' => 'bot'];
         }
 
@@ -30,12 +30,12 @@
         ];
 
         foreach (array_keys($breakdowns) as $metric) {
-            if (! $website->tracks(\App\Enums\Metric::from($metric))) {
+            if (! $website->isTracking(\App\Enums\Metric::from($metric))) {
                 unset($breakdowns[$metric]);
             }
         }
 
-        $countries = $website->tracks(\App\Enums\Metric::Country)
+        $countries = $website->isTracking(\App\Enums\Metric::Country)
             ? ($metrics->get(\App\Enums\Metric::Country->value) ?? collect())
             : collect();
         $countryTotal = max(1, (int) $countries->sum('count'));
@@ -96,7 +96,7 @@
         </div>
     @endif
 
-    @if ($website->tracks(\App\Enums\Metric::Path))
+    @if ($website->isTracking(\App\Enums\Metric::Path))
         <section class="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 sm:p-6">
             <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
@@ -114,7 +114,7 @@
         </section>
     @endif
 
-    @if ($website->tracks(\App\Enums\Metric::Country))
+    @if ($website->isTracking(\App\Enums\Metric::Country))
         <div class="mt-6 grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
             <section class="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 sm:p-6">
                 <div class="flex items-center gap-3">
@@ -221,7 +221,7 @@
         <div class="mt-6 grid gap-6 xl:grid-cols-2">
             <section>
                 <h2 class="font-medium">Browser collection</h2>
-                <p class="mt-2 text-sm leading-6 text-zinc-400">The script only sends the full page URL and referrer. Untracked derives only enabled metrics in memory and persists only those enabled counters; the raw URL, IP, User-Agent and referrer are never persisted.</p>
+                <p class="mt-2 text-sm leading-6 text-zinc-400">The script only sends the full page URL and referrer. Untracked derives path, UTM values, country, client, OS and device in memory; only enabled metrics are persisted, and the raw URL, IP, User-Agent and referrer are never persisted.</p>
                 <pre class="mt-4 overflow-x-auto rounded-lg bg-black/40 p-4 text-sm text-zinc-300"><code>&lt;script defer data-website-id="{{ $website->uuid }}" src="{{ url('/script.js') }}"&gt;&lt;/script&gt;</code></pre>
             </section>
 
