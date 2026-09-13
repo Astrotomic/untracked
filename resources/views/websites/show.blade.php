@@ -1,11 +1,9 @@
 <x-layouts.app :title="$website->name">
     @php
-        $summary = [];
-
-        if ($website->isTracking(\App\Enums\Metric::Path)) {
-            $summary[] = ['label' => 'Requests', 'value' => $requests, 'icon' => 'activity'];
-            $summary[] = ['label' => 'Paths', 'value' => $pathCount, 'icon' => 'file-text'];
-        }
+        $summary = [
+            ['label' => 'Requests', 'value' => $requests, 'icon' => 'activity'],
+            ['label' => 'Paths', 'value' => $pathCount, 'icon' => 'file-text'],
+        ];
 
         if ($website->isTracking(\App\Enums\Metric::Country)) {
             $summary[] = ['label' => 'Countries', 'value' => $countryCount, 'icon' => 'globe-2'];
@@ -80,39 +78,35 @@
         @endforeach
     </div>
 
-    @if ($summary !== [])
-        <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            @foreach ($summary as $item)
-                <section class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
-                    <div class="flex items-center justify-between gap-4">
-                        <p class="text-sm text-zinc-500">{{ $item['label'] }}</p>
-                        <span class="rounded-lg bg-zinc-800/80 p-2 text-zinc-400">
-                            <x-icon.lucide :name="$item['icon']" />
-                        </span>
-                    </div>
-                    <p class="mt-5 text-3xl font-semibold tracking-tight tabular-nums">{{ number_format($item['value']) }}</p>
-                </section>
-            @endforeach
-        </div>
-    @endif
+    <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        @foreach ($summary as $item)
+            <section class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+                <div class="flex items-center justify-between gap-4">
+                    <p class="text-sm text-zinc-500">{{ $item['label'] }}</p>
+                    <span class="rounded-lg bg-zinc-800/80 p-2 text-zinc-400">
+                        <x-icon.lucide :name="$item['icon']" />
+                    </span>
+                </div>
+                <p class="mt-5 text-3xl font-semibold tracking-tight tabular-nums">{{ number_format($item['value']) }}</p>
+            </section>
+        @endforeach
+    </div>
 
-    @if ($website->isTracking(\App\Enums\Metric::Path))
-        <section class="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 sm:p-6">
-            <div class="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                    <p class="text-sm font-medium text-zinc-100">Requests over time</p>
-                    <p class="mt-1 text-sm text-zinc-500">Daily request counters for the selected period.</p>
-                </div>
-                <div class="text-right">
-                    <p class="text-2xl font-semibold tabular-nums">{{ number_format($requests) }}</p>
-                    <p class="text-xs text-zinc-500">{{ $days }} day total</p>
-                </div>
+    <section class="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 sm:p-6">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+            <div>
+                <p class="text-sm font-medium text-zinc-100">Requests over time</p>
+                <p class="mt-1 text-sm text-zinc-500">Daily request counters for the selected period.</p>
             </div>
-            <div class="mt-6 h-72">
-                <canvas id="requests-chart"></canvas>
+            <div class="text-right">
+                <p class="text-2xl font-semibold tabular-nums">{{ number_format($requests) }}</p>
+                <p class="text-xs text-zinc-500">{{ $days }} day total</p>
             </div>
-        </section>
-    @endif
+        </div>
+        <div class="mt-6 h-72">
+            <canvas id="requests-chart"></canvas>
+        </div>
+    </section>
 
     @if ($website->isTracking(\App\Enums\Metric::Country))
         <div class="mt-6 grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
@@ -221,13 +215,13 @@
         <div class="mt-6 grid gap-6 xl:grid-cols-2">
             <section>
                 <h2 class="font-medium">Browser collection</h2>
-                <p class="mt-2 text-sm leading-6 text-zinc-400">The script only sends the full page URL and referrer. Untracked derives path, UTM values, country, client, OS and device in memory; only enabled metrics are persisted, and the raw URL, IP, User-Agent and referrer are never persisted.</p>
+                <p class="mt-2 text-sm leading-6 text-zinc-400">The script only sends the full page URL and referrer. Untracked derives path, UTM values, country, client, OS and device in memory; path is always persisted, while optional metrics respect the website preferences. The raw URL, IP, User-Agent and referrer are never persisted.</p>
                 <pre class="mt-4 overflow-x-auto rounded-lg bg-black/40 p-4 text-sm text-zinc-300"><code>&lt;script defer data-website-id="{{ $website->uuid }}" src="{{ url('/script.js') }}"&gt;&lt;/script&gt;</code></pre>
             </section>
 
             <section>
                 <h2 class="font-medium">Server-side collection</h2>
-                <p class="mt-2 text-sm leading-6 text-zinc-400">Send only the coarse values you actually want to keep. Disabled metrics are ignored even if they are present in the payload, and bot dimensions are reduced with the same rules as raw collection.</p>
+                <p class="mt-2 text-sm leading-6 text-zinc-400">Send only the coarse values you actually want to keep. Disabled optional metrics are ignored even if they are present in the payload, and bot dimensions are reduced with the same rules as raw collection.</p>
                 <pre class="mt-4 overflow-x-auto rounded-lg bg-black/40 p-4 text-sm text-zinc-300"><code>POST {{ route('collect.processed', $website) }}
 
 {
