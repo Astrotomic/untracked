@@ -16,6 +16,7 @@ class TrackTestRequestController
                 'name' => 'Untracked Test',
                 'timezone' => config('app.timezone'),
                 'should_track_bots' => true,
+                'metric_preferences' => Website::defaultMetricPreferences(),
             ],
         );
 

@@ -4,6 +4,7 @@ namespace Tests\Http\Controllers;
 
 use App\Enums\Device;
 use App\Enums\Format;
+use App\Enums\Metric;
 use App\Models\Website;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -39,6 +40,31 @@ class RawCollectControllerTest extends TestCase
             'utm_campaign' => ['launch' => 1],
             'utm_term' => ['privacy analytics' => 1],
             'utm_content' => ['hero-link' => 1],
+        ], $website);
+    }
+
+    #[Test]
+    public function it_does_not_persist_disabled_raw_metrics(): void
+    {
+        $website = $this->website(metricPreferences: [
+            Metric::Client->value => false,
+            Metric::Referrer->value => false,
+            Metric::UtmSource->value => false,
+        ]);
+
+        $this->withHeader('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64; rv:142.0) Gecko/20100101 Firefox/142.0')
+            ->postJson(route('collect.raw', $website), [
+                'url' => 'https://example.com/landing?utm_source=newsletter&utm_medium=email',
+                'referrer' => 'https://www.google.com/search?q=private',
+            ])
+            ->assertNoContent();
+
+        DailyMetricsAssertions::assertEquals([
+            'path' => ['/landing' => 1],
+            'os' => ['Linux' => 1],
+            'device' => [Device::Desktop->value => 1],
+            'format' => [Format::Html->value => 1],
+            'utm_medium' => ['email' => 1],
         ], $website);
     }
 
@@ -100,13 +126,27 @@ class RawCollectControllerTest extends TestCase
         ];
     }
 
-    private function website(bool $shouldTrackBots = true): Website
+    /**
+     * @param  array<string, bool>  $metricPreferences
+     */
+    private function website(bool $shouldTrackBots = true, array $metricPreferences = []): Website
     {
+        $preferences = [];
+
+        foreach (Metric::cases() as $metric) {
+            if (! $metric->isConfigurable()) {
+                continue;
+            }
+
+            $preferences[$metric->value] = true;
+        }
+
         return Website::query()->create([
             'name' => 'Example',
             'domain' => 'example.com',
             'timezone' => 'UTC',
             'should_track_bots' => $shouldTrackBots,
+            'metric_preferences' => array_replace($preferences, $metricPreferences),
         ]);
     }
 }

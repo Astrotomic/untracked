@@ -50,6 +50,7 @@ class ValidateWebsiteOriginTest extends TestCase
             'domain' => 'example.com',
             'timezone' => 'UTC',
             'should_track_bots' => true,
+            'metric_preferences' => Website::defaultMetricPreferences(),
         ]);
     }
 }

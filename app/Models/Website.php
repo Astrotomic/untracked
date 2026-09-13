@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @property array<string, bool> $metric_preferences
+ */
 class Website extends Model
 {
     use HasUuids;
@@ -25,7 +28,24 @@ class Website extends Model
     {
         return [
             'should_track_bots' => 'boolean',
+            'metric_preferences' => 'array',
         ];
+    }
+
+    /**
+     * @return array<string, bool>
+     */
+    public static function defaultMetricPreferences(): array
+    {
+        $preferences = [];
+
+        foreach (Metric::cases() as $metric) {
+            if ($metric->isConfigurable()) {
+                $preferences[$metric->value] = true;
+            }
+        }
+
+        return $preferences;
     }
 
     /**
@@ -34,6 +54,12 @@ class Website extends Model
     public function dailyMetrics(): HasMany
     {
         return $this->hasMany(DailyMetric::class);
+    }
+
+    public function isTracking(Metric $metric): bool
+    {
+        return ! $metric->isConfigurable()
+            || ($this->metric_preferences[$metric->value] ?? true);
     }
 
     public function recordRaw(string $url, string $ip, string $userAgent, ?string $referrer): Dimensions
@@ -56,6 +82,7 @@ class Website extends Model
         $date = CarbonImmutable::now($this->timezone)->toDateString();
 
         $rows = collect(Metric::cases())
+            ->filter(fn (Metric $metric): bool => $this->isTracking($metric))
             ->map(function (Metric $metric) use ($date, $dimensions): ?array {
                 $value = $dimensions->value($metric);
 
@@ -74,6 +101,10 @@ class Website extends Model
             ->filter()
             ->values()
             ->all();
+
+        if ($rows === []) {
+            return $dimensions;
+        }
 
         DB::transaction(function () use ($rows, $date): void {
             $this->dailyMetrics()->insertOrIgnore($rows);

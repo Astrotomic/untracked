@@ -10,7 +10,7 @@ class UpdateWebsiteController
 {
     public function __invoke(WebsiteRequest $request, Website $website): RedirectResponse
     {
-        $website->update($request->validated());
+        $website->update($request->websiteAttributes());
 
         return redirect()->route('websites.show', $website);
     }

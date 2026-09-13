@@ -10,7 +10,7 @@ class CreateWebsiteController
 {
     public function __invoke(WebsiteRequest $request): RedirectResponse
     {
-        $website = Website::query()->create($request->validated());
+        $website = Website::query()->create($request->websiteAttributes());
 
         return redirect()->route('websites.show', $website);
     }

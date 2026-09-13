@@ -38,6 +38,7 @@ class TestControllerTest extends TestCase
         Assert::assertSame('Untracked Test', $website->name);
         Assert::assertSame('UTC', $website->timezone);
         Assert::assertTrue($website->should_track_bots);
+        Assert::assertSame(Website::defaultMetricPreferences(), $website->metric_preferences);
 
         DailyMetricsAssertions::assertEquals([
             'path' => ['/test' => 1],
@@ -58,6 +59,7 @@ class TestControllerTest extends TestCase
             'domain' => 'localhost',
             'timezone' => 'UTC',
             'should_track_bots' => true,
+            'metric_preferences' => Website::defaultMetricPreferences(),
         ]);
         $headers = [
             'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64; rv:142.0) Gecko/20100101 Firefox/142.0',

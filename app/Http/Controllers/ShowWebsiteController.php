@@ -20,6 +20,10 @@ class ShowWebsiteController
 
         $today = now($website->timezone)->startOfDay();
         $from = $today->copy()->subDays($days - 1);
+        $isTrackingCountry = $website->isTracking(Metric::Country);
+        $isTrackingDevice = $website->isTracking(Metric::Device);
+        $showsBotTraffic = $website->should_track_bots && $isTrackingDevice;
+        $showsHumanTraffic = ! $website->should_track_bots || $isTrackingDevice;
 
         $query = DailyMetric::query()
             ->where('website_uuid', $website->getKey())
@@ -42,26 +46,28 @@ class ShowWebsiteController
             ->pluck('total', 'date');
 
         /** @var Collection<string, int|string> $dailyBotRequests */
-        $dailyBotRequests = (clone $query)
-            ->where('metric', Metric::Device->value)
-            ->where('value', Device::Bot->value)
-            ->selectRaw('date, SUM(count) as total')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->pluck('total', 'date');
+        $dailyBotRequests = $isTrackingDevice
+            ? (clone $query)
+                ->where('metric', Metric::Device->value)
+                ->where('value', Device::Bot->value)
+                ->selectRaw('date, SUM(count) as total')
+                ->groupBy('date')
+                ->orderBy('date')
+                ->pluck('total', 'date')
+            : collect();
 
         $trend = collect(range(0, $days - 1))
-            ->map(function (int $offset) use ($dailyRequests, $dailyBotRequests, $from, $website): array {
+            ->map(function (int $offset) use ($dailyRequests, $dailyBotRequests, $from, $showsBotTraffic, $showsHumanTraffic): array {
                 $date = $from->copy()->addDays($offset);
                 $requests = (int) $dailyRequests->get($date->toDateString(), 0);
                 $bots = (int) $dailyBotRequests->get($date->toDateString(), 0);
                 $point = [
                     'date' => $date->toDateString(),
                     'label' => $date->format('M j'),
-                    'human' => max(0, $requests - $bots),
+                    'human' => $showsHumanTraffic ? max(0, $requests - $bots) : $requests,
                 ];
 
-                if ($website->should_track_bots) {
+                if ($showsBotTraffic) {
                     $point['bot'] = $bots;
                 }
 
@@ -70,21 +76,23 @@ class ShowWebsiteController
 
         $requests = (int) $metrics->get(Metric::Path->value)?->sum(fn (DailyMetric $metric) => $metric->count);
         $pathCount = $metrics->get(Metric::Path->value)?->count() ?? 0;
-        $countryCount = $metrics->get(Metric::Country->value)?->count() ?? 0;
-        $deviceMetrics = $metrics->get(Metric::Device->value) ?? collect();
+        $countryCount = $isTrackingCountry ? ($metrics->get(Metric::Country->value)?->count() ?? 0) : 0;
+        $deviceMetrics = $isTrackingDevice ? ($metrics->get(Metric::Device->value) ?? collect()) : collect();
         $botRequests = (int) $deviceMetrics
             ->where('value', Device::Bot->value)
             ->sum(fn (DailyMetric $metric) => $metric->count);
 
-        if (! $website->should_track_bots) {
+        if (! $website->should_track_bots && $isTrackingDevice) {
             $requests = max(0, $requests - $botRequests);
         }
 
-        $countryValues = $metrics->get(Metric::Country->value)
-            ?->mapWithKeys(fn (DailyMetric $metric): array => [
-                $metric->value => ['requests' => (int) $metric->count],
-            ])
-            ->all() ?? [];
+        $countryValues = $isTrackingCountry
+            ? $metrics->get(Metric::Country->value)
+                ?->mapWithKeys(fn (DailyMetric $metric): array => [
+                    $metric->value => ['requests' => (int) $metric->count],
+                ])
+                ->all() ?? []
+            : [];
 
         return view('websites.show', [
             'website' => $website,
@@ -96,6 +104,8 @@ class ShowWebsiteController
             'botRequests' => $botRequests,
             'trend' => $trend,
             'countryValues' => $countryValues,
+            'showsBotTraffic' => $showsBotTraffic,
+            'trafficLabel' => $showsHumanTraffic ? 'Human' : 'Requests',
         ]);
     }
 }

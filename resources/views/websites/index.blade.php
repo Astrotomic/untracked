@@ -46,7 +46,7 @@
 
                     <div class="text-right">
                         <p class="text-xl font-semibold text-zinc-100 tabular-nums">{{ number_format($stats['today']) }}</p>
-                        <p class="mt-0.5 text-xs text-zinc-500">human today</p>
+                        <p class="mt-0.5 text-xs text-zinc-500">{{ $stats['traffic_label'] }}</p>
                     </div>
 
                     <div

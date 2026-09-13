@@ -4,6 +4,7 @@ namespace Tests\Http\Controllers;
 
 use App\Enums\Device;
 use App\Enums\Format;
+use App\Enums\Metric;
 use App\Models\Website;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -48,6 +49,33 @@ class ProcessedCollectControllerTest extends TestCase
             'utm_campaign' => ['launch' => 1],
             'utm_term' => ['privacy analytics' => 1],
             'utm_content' => ['hero-link' => 1],
+        ], $website);
+    }
+
+    #[Test]
+    public function it_does_not_persist_disabled_processed_metrics(): void
+    {
+        $website = $this->website(metricPreferences: [
+            Metric::Country->value => false,
+            Metric::OperatingSystem->value => false,
+            Metric::UtmCampaign->value => false,
+        ]);
+
+        $this->postJson(route('collect.processed', $website), [
+            'path' => '/landing',
+            'country' => 'de',
+            'client' => 'Firefox',
+            'os' => 'Windows',
+            'device' => Device::Desktop->value,
+            'format' => Format::Html->value,
+            'utm_campaign' => 'launch',
+        ])->assertNoContent();
+
+        DailyMetricsAssertions::assertEquals([
+            'path' => ['/landing' => 1],
+            'client' => ['Firefox' => 1],
+            'device' => [Device::Desktop->value => 1],
+            'format' => [Format::Html->value => 1],
         ], $website);
     }
 
@@ -147,13 +175,27 @@ class ProcessedCollectControllerTest extends TestCase
         ];
     }
 
-    private function website(): Website
+    /**
+     * @param  array<string, bool>  $metricPreferences
+     */
+    private function website(array $metricPreferences = []): Website
     {
+        $preferences = [];
+
+        foreach (Metric::cases() as $metric) {
+            if (! $metric->isConfigurable()) {
+                continue;
+            }
+
+            $preferences[$metric->value] = true;
+        }
+
         return Website::query()->create([
             'name' => 'Example',
             'domain' => 'example.com',
             'timezone' => 'UTC',
             'should_track_bots' => true,
+            'metric_preferences' => array_replace($preferences, $metricPreferences),
         ]);
     }
 }

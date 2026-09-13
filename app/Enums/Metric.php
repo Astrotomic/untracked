@@ -16,4 +16,9 @@ enum Metric: string
     case UtmCampaign = 'utm_campaign';
     case UtmTerm = 'utm_term';
     case UtmContent = 'utm_content';
+
+    public function isConfigurable(): bool
+    {
+        return $this !== self::Path;
+    }
 }
