@@ -16,12 +16,24 @@ class WebsiteRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if ($this->exists('metric_preferences')) {
+        if (! $this->exists('metric_preferences')) {
+            $this->merge([
+                'metric_preferences' => self::defaultMetricPreferences(),
+            ]);
+
             return;
         }
 
+        $metricPreferences = $this->input('metric_preferences');
+
+        if (! is_array($metricPreferences)) {
+            return;
+        }
+
+        unset($metricPreferences[Metric::Path->value]);
+
         $this->merge([
-            'metric_preferences' => self::defaultMetricPreferences(),
+            'metric_preferences' => $metricPreferences,
         ]);
     }
 
