@@ -58,10 +58,13 @@ class WebsiteTest extends TestCase
     public function it_does_not_persist_disabled_metrics(): void
     {
         $website = $this->website(metricPreferences: [
+            Metric::Path->value => false,
             Metric::Country->value => false,
             Metric::Client->value => false,
             Metric::UtmCampaign->value => false,
         ]);
+
+        Assert::assertTrue($website->isTracking(Metric::Path));
 
         $website->record(new Dimensions(
             path: '/blog/example',
@@ -131,6 +134,10 @@ class WebsiteTest extends TestCase
         $preferences = [];
 
         foreach (Metric::cases() as $metric) {
+            if (! $metric->isConfigurable()) {
+                continue;
+            }
+
             $preferences[$metric->value] = true;
         }
 
