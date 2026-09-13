@@ -40,7 +40,7 @@ class Website extends Model
         return $this->hasMany(DailyMetric::class);
     }
 
-    public function tracks(Metric $metric): bool
+    public function isTracking(Metric $metric): bool
     {
         return $this->metric_preferences[$metric->value] ?? true;
     }
@@ -65,7 +65,7 @@ class Website extends Model
         $date = CarbonImmutable::now($this->timezone)->toDateString();
 
         $rows = collect(Metric::cases())
-            ->filter(fn (Metric $metric): bool => $this->tracks($metric))
+            ->filter(fn (Metric $metric): bool => $this->isTracking($metric))
             ->map(function (Metric $metric) use ($date, $dimensions): ?array {
                 $value = $dimensions->value($metric);
 
