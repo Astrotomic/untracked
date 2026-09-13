@@ -90,13 +90,13 @@ class ListWebsitesController
             $previousSevenDays = collect(range(14, 8))
                 ->sum(fn (int $offset): int => $requests($today->subDays($offset)));
             $difference = $currentSevenDays - $previousSevenDays;
-            $humanOnly = ! $website->should_track_bots || $isTrackingDevice;
+            $canIdentifyHumanTraffic = ! $website->should_track_bots || $isTrackingDevice;
 
             return [
                 $website->getKey() => [
-                    'tracks_path' => $isTrackingPath,
+                    'is_tracking_path' => $isTrackingPath,
                     'today' => $requests($today),
-                    'traffic_label' => $humanOnly ? 'human today' : 'requests today',
+                    'traffic_label' => $canIdentifyHumanTraffic ? 'human today' : 'requests today',
                     'sparkline' => $sparkline,
                     'trend_direction' => match (true) {
                         $difference > 0 => 'up',
