@@ -42,7 +42,8 @@ class Website extends Model
 
     public function isTracking(Metric $metric): bool
     {
-        return $this->metric_preferences[$metric->value] ?? true;
+        return ! $metric->isConfigurable()
+            || ($this->metric_preferences[$metric->value] ?? true);
     }
 
     public function recordRaw(string $url, string $ip, string $userAgent, ?string $referrer): Dimensions
