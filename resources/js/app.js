@@ -67,13 +67,13 @@ if (websiteListData) {
 const dashboardData = document.getElementById('analytics-dashboard-data');
 
 if (dashboardData) {
-    const { trend, countries, shouldTrackBots } = JSON.parse(dashboardData.textContent);
+    const { trend, countries, showsBotTraffic, trafficLabel } = JSON.parse(dashboardData.textContent);
     const chart = document.getElementById('requests-chart');
 
     if (chart) {
         const datasets = [
             {
-                label: 'Human',
+                label: trafficLabel,
                 data: trend.map((point) => point.human),
                 borderColor: '#e4e4e7',
                 backgroundColor: '#e4e4e7',
@@ -86,7 +86,7 @@ if (dashboardData) {
             },
         ];
 
-        if (shouldTrackBots) {
+        if (showsBotTraffic) {
             datasets.push({
                 label: 'Bots',
                 data: trend.map((point) => point.bot),
@@ -116,7 +116,7 @@ if (dashboardData) {
                 },
                 plugins: {
                     legend: {
-                        display: shouldTrackBots,
+                        display: showsBotTraffic,
                         labels: {
                             color: '#a1a1aa',
                             usePointStyle: true,

@@ -39,36 +39,40 @@
                     <span class="rounded-full border border-zinc-700 px-2 py-1 text-xs text-zinc-400">{{ $website->should_track_bots ? 'bots on' : 'bots off' }}</span>
                 </div>
 
-                <div class="mt-6 grid grid-cols-[minmax(0,1fr)_auto_auto] items-end gap-5">
-                    <div class="h-12 min-w-0">
-                        <canvas data-website-sparkline="{{ $website->getKey() }}"></canvas>
-                    </div>
+                @if ($stats['tracks_path'])
+                    <div class="mt-6 grid grid-cols-[minmax(0,1fr)_auto_auto] items-end gap-5">
+                        <div class="h-12 min-w-0">
+                            <canvas data-website-sparkline="{{ $website->getKey() }}"></canvas>
+                        </div>
 
-                    <div class="text-right">
-                        <p class="text-xl font-semibold text-zinc-100 tabular-nums">{{ number_format($stats['today']) }}</p>
-                        <p class="mt-0.5 text-xs text-zinc-500">human today</p>
-                    </div>
+                        <div class="text-right">
+                            <p class="text-xl font-semibold text-zinc-100 tabular-nums">{{ number_format($stats['today']) }}</p>
+                            <p class="mt-0.5 text-xs text-zinc-500">{{ $stats['traffic_label'] }}</p>
+                        </div>
 
-                    <div
-                        class="text-right"
-                        title="Last 7 complete days compared with the previous 7 complete days"
-                    >
-                        <p class="flex items-center justify-end gap-1 text-sm font-medium tabular-nums {{ $trendClass }}">
-                            <x-icon.lucide
-                                :name="$trendIcon"
-                                class="size-3.5"
-                            />
-                            @if ($stats['trend_direction'] === 'flat')
-                                steady
-                            @elseif ($stats['trend_percentage'] === null)
-                                new
-                            @else
-                                {{ $stats['trend_percentage'] }}%
-                            @endif
-                        </p>
-                        <p class="mt-0.5 text-xs text-zinc-500">7d trend</p>
+                        <div
+                            class="text-right"
+                            title="Last 7 complete days compared with the previous 7 complete days"
+                        >
+                            <p class="flex items-center justify-end gap-1 text-sm font-medium tabular-nums {{ $trendClass }}">
+                                <x-icon.lucide
+                                    :name="$trendIcon"
+                                    class="size-3.5"
+                                />
+                                @if ($stats['trend_direction'] === 'flat')
+                                    steady
+                                @elseif ($stats['trend_percentage'] === null)
+                                    new
+                                @else
+                                    {{ $stats['trend_percentage'] }}%
+                                @endif
+                            </p>
+                            <p class="mt-0.5 text-xs text-zinc-500">7d trend</p>
+                        </div>
                     </div>
-                </div>
+                @else
+                    <div class="mt-6 rounded-lg bg-zinc-950/40 px-3 py-2.5 text-sm text-zinc-500">Path metric disabled</div>
+                @endif
             </a>
         @empty
             <div class="rounded-xl border border-dashed border-zinc-800 p-10 text-center text-zinc-500 md:col-span-2">No websites yet.</div>

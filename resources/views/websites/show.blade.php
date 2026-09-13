@@ -1,36 +1,51 @@
 <x-layouts.app :title="$website->name">
     @php
-        $summary = [
-            ['label' => 'Requests', 'value' => $requests, 'icon' => 'activity'],
-            ['label' => 'Paths', 'value' => $pathCount, 'icon' => 'file-text'],
-            ['label' => 'Countries', 'value' => $countryCount, 'icon' => 'globe-2'],
-        ];
+        $summary = [];
 
-        if ($website->should_track_bots) {
+        if ($website->tracks(\App\Enums\Metric::Path)) {
+            $summary[] = ['label' => 'Requests', 'value' => $requests, 'icon' => 'activity'];
+            $summary[] = ['label' => 'Paths', 'value' => $pathCount, 'icon' => 'file-text'];
+        }
+
+        if ($website->tracks(\App\Enums\Metric::Country)) {
+            $summary[] = ['label' => 'Countries', 'value' => $countryCount, 'icon' => 'globe-2'];
+        }
+
+        if ($website->should_track_bots && $website->tracks(\App\Enums\Metric::Device)) {
             $summary[] = ['label' => 'Bot requests', 'value' => $botRequests, 'icon' => 'bot'];
         }
 
         $breakdowns = [
-            'path' => ['label' => 'Paths', 'icon' => 'file-text'],
-            'client' => ['label' => 'Clients', 'icon' => 'monitor'],
-            'os' => ['label' => 'Operating systems', 'icon' => 'laptop'],
-            'device' => ['label' => 'Devices', 'icon' => 'smartphone'],
-            'format' => ['label' => 'Formats', 'icon' => 'files'],
-            'referrer' => ['label' => 'Referrers', 'icon' => 'link-2'],
-            'utm_source' => ['label' => 'UTM sources', 'icon' => 'megaphone'],
-            'utm_medium' => ['label' => 'UTM mediums', 'icon' => 'send'],
-            'utm_campaign' => ['label' => 'UTM campaigns', 'icon' => 'target'],
-            'utm_term' => ['label' => 'UTM terms', 'icon' => 'search'],
-            'utm_content' => ['label' => 'UTM contents', 'icon' => 'panels-top-left'],
+            \App\Enums\Metric::Path->value => ['label' => 'Paths', 'icon' => 'file-text'],
+            \App\Enums\Metric::Client->value => ['label' => 'Clients', 'icon' => 'monitor'],
+            \App\Enums\Metric::OperatingSystem->value => ['label' => 'Operating systems', 'icon' => 'laptop'],
+            \App\Enums\Metric::Device->value => ['label' => 'Devices', 'icon' => 'smartphone'],
+            \App\Enums\Metric::Format->value => ['label' => 'Formats', 'icon' => 'files'],
+            \App\Enums\Metric::Referrer->value => ['label' => 'Referrers', 'icon' => 'link-2'],
+            \App\Enums\Metric::UtmSource->value => ['label' => 'UTM sources', 'icon' => 'megaphone'],
+            \App\Enums\Metric::UtmMedium->value => ['label' => 'UTM mediums', 'icon' => 'send'],
+            \App\Enums\Metric::UtmCampaign->value => ['label' => 'UTM campaigns', 'icon' => 'target'],
+            \App\Enums\Metric::UtmTerm->value => ['label' => 'UTM terms', 'icon' => 'search'],
+            \App\Enums\Metric::UtmContent->value => ['label' => 'UTM contents', 'icon' => 'panels-top-left'],
         ];
 
-        $countries = $metrics->get('country') ?? collect();
+        foreach (array_keys($breakdowns) as $metric) {
+            if (! $website->tracks(\App\Enums\Metric::from($metric))) {
+                unset($breakdowns[$metric]);
+            }
+        }
+
+        $countries = $website->tracks(\App\Enums\Metric::Country)
+            ? ($metrics->get(\App\Enums\Metric::Country->value) ?? collect())
+            : collect();
         $countryTotal = max(1, (int) $countries->sum('count'));
         $countryName = static fn (string $country): string => \Locale::getDisplayRegion('und_'.strtoupper($country), 'en') ?: strtoupper($country);
         $dashboardData = [
             'trend' => $trend,
             'countries' => $countryValues,
             'shouldTrackBots' => $website->should_track_bots,
+            'showsBotTraffic' => $showsBotTraffic,
+            'trafficLabel' => $trafficLabel,
         ];
     @endphp
 
@@ -65,105 +80,66 @@
         @endforeach
     </div>
 
-    <div class="mt-6 grid gap-4 sm:grid-cols-2 {{ $website->should_track_bots ? 'xl:grid-cols-4' : 'xl:grid-cols-3' }}">
-        @foreach ($summary as $item)
-            <section class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
-                <div class="flex items-center justify-between gap-4">
-                    <p class="text-sm text-zinc-500">{{ $item['label'] }}</p>
-                    <span class="rounded-lg bg-zinc-800/80 p-2 text-zinc-400">
-                        <x-icon.lucide :name="$item['icon']" />
-                    </span>
-                </div>
-                <p class="mt-5 text-3xl font-semibold tracking-tight tabular-nums">{{ number_format($item['value']) }}</p>
-            </section>
-        @endforeach
-    </div>
-
-    <section class="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 sm:p-6">
-        <div class="flex flex-wrap items-start justify-between gap-4">
-            <div>
-                <p class="text-sm font-medium text-zinc-100">Requests over time</p>
-                <p class="mt-1 text-sm text-zinc-500">Daily request counters for the selected period.</p>
-            </div>
-            <div class="text-right">
-                <p class="text-2xl font-semibold tabular-nums">{{ number_format($requests) }}</p>
-                <p class="text-xs text-zinc-500">{{ $days }} day total</p>
-            </div>
+    @if ($summary !== [])
+        <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            @foreach ($summary as $item)
+                <section class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+                    <div class="flex items-center justify-between gap-4">
+                        <p class="text-sm text-zinc-500">{{ $item['label'] }}</p>
+                        <span class="rounded-lg bg-zinc-800/80 p-2 text-zinc-400">
+                            <x-icon.lucide :name="$item['icon']" />
+                        </span>
+                    </div>
+                    <p class="mt-5 text-3xl font-semibold tracking-tight tabular-nums">{{ number_format($item['value']) }}</p>
+                </section>
+            @endforeach
         </div>
-        <div class="mt-6 h-72">
-            <canvas id="requests-chart"></canvas>
-        </div>
-    </section>
+    @endif
 
-    <div class="mt-6 grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
-        <section class="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 sm:p-6">
-            <div class="flex items-center gap-3">
-                <span class="rounded-lg bg-zinc-800/80 p-2 text-zinc-400"><x-icon.lucide name="globe-2" /></span>
+    @if ($website->tracks(\App\Enums\Metric::Path))
+        <section class="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 sm:p-6">
+            <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                    <h2 class="font-medium">Countries</h2>
-                    <p class="text-sm text-zinc-500">Request distribution by resolved country.</p>
+                    <p class="text-sm font-medium text-zinc-100">Requests over time</p>
+                    <p class="mt-1 text-sm text-zinc-500">Daily request counters for the selected period.</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-2xl font-semibold tabular-nums">{{ number_format($requests) }}</p>
+                    <p class="text-xs text-zinc-500">{{ $days }} day total</p>
                 </div>
             </div>
-            <div
-                id="country-map"
-                class="mt-6 min-h-80"
-            ></div>
-        </section>
-
-        <section class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 sm:p-6">
-            <div class="flex items-center justify-between gap-4">
-                <h2 class="font-medium">Top countries</h2>
-                <span class="text-xs text-zinc-500 tabular-nums">{{ number_format((int) $countries->sum('count')) }} resolved</span>
+            <div class="mt-6 h-72">
+                <canvas id="requests-chart"></canvas>
             </div>
+        </section>
+    @endif
 
-            <div class="mt-5 space-y-2.5">
-                @forelse ($countries->take(10) as $row)
-                    @php
-                        $percentage = ($row->count / $countryTotal) * 100;
-                    @endphp
-                    <div class="relative overflow-hidden rounded-lg bg-zinc-950/50">
-                        <div
-                            class="absolute inset-y-0 left-0 bg-zinc-800/60"
-                            style="width: {{ min(100, $percentage) }}%"
-                        ></div>
-                        <div class="relative flex items-center justify-between gap-4 px-3 py-2.5 text-sm">
-                            <span class="flex min-w-0 items-center gap-2.5 text-zinc-300">
-                                <x-icon.country :country="$row->value" />
-                                <span
-                                    class="truncate"
-                                    title="{{ $row->value }}"
-                                    >{{ $countryName($row->value) }}</span
-                                >
-                            </span>
-                            <span class="shrink-0 text-zinc-500 tabular-nums">{{ number_format($row->count) }} <span class="text-zinc-700">·</span> {{ number_format($percentage, 1) }}%</span>
-                        </div>
+    @if ($website->tracks(\App\Enums\Metric::Country))
+        <div class="mt-6 grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
+            <section class="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 sm:p-6">
+                <div class="flex items-center gap-3">
+                    <span class="rounded-lg bg-zinc-800/80 p-2 text-zinc-400"><x-icon.lucide name="globe-2" /></span>
+                    <div>
+                        <h2 class="font-medium">Countries</h2>
+                        <p class="text-sm text-zinc-500">Request distribution by resolved country.</p>
                     </div>
-                @empty
-                    <div class="rounded-lg bg-zinc-950/50 px-3 py-2.5 text-sm text-zinc-600">No country data yet.</div>
-                @endforelse
-            </div>
-        </section>
-    </div>
+                </div>
+                <div
+                    id="country-map"
+                    class="mt-6 min-h-80"
+                ></div>
+            </section>
 
-    <div class="mt-6 grid gap-6 lg:grid-cols-2">
-        @foreach ($breakdowns as $metric => $config)
-            @php
-                $rows = $metrics->get($metric) ?? collect();
-                $total = max(1, (int) $rows->sum('count'));
-            @endphp
-            <section class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+            <section class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 sm:p-6">
                 <div class="flex items-center justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                        <span class="rounded-lg bg-zinc-800/80 p-2 text-zinc-400"><x-icon.lucide :name="$config['icon']" /></span>
-                        <h2 class="font-medium">{{ $config['label'] }}</h2>
-                    </div>
-                    <span class="text-xs text-zinc-600 tabular-nums">{{ number_format((int) $rows->sum('count')) }}</span>
+                    <h2 class="font-medium">Top countries</h2>
+                    <span class="text-xs text-zinc-500 tabular-nums">{{ number_format((int) $countries->sum('count')) }} resolved</span>
                 </div>
 
                 <div class="mt-5 space-y-2.5">
-                    @forelse ($rows->take(8) as $row)
+                    @forelse ($countries->take(10) as $row)
                         @php
-                            $percentage = ($row->count / $total) * 100;
+                            $percentage = ($row->count / $countryTotal) * 100;
                         @endphp
                         <div class="relative overflow-hidden rounded-lg bg-zinc-950/50">
                             <div
@@ -171,40 +147,87 @@
                                 style="width: {{ min(100, $percentage) }}%"
                             ></div>
                             <div class="relative flex items-center justify-between gap-4 px-3 py-2.5 text-sm">
-                                <span
-                                    class="flex min-w-0 items-center gap-2.5 text-zinc-300"
-                                    title="{{ $row->value }}"
-                                >
-                                    @if ($metric === 'client')
-                                        <x-icon.client :client="$row->value" />
-                                    @elseif ($metric === 'referrer')
-                                        <x-icon.favicon :domain="$row->value" />
-                                    @endif
-                                    <span class="truncate">{{ $row->value }}</span>
+                                <span class="flex min-w-0 items-center gap-2.5 text-zinc-300">
+                                    <x-icon.country :country="$row->value" />
+                                    <span
+                                        class="truncate"
+                                        title="{{ $row->value }}"
+                                        >{{ $countryName($row->value) }}</span
+                                    >
                                 </span>
                                 <span class="shrink-0 text-zinc-500 tabular-nums">{{ number_format($row->count) }} <span class="text-zinc-700">·</span> {{ number_format($percentage, 1) }}%</span>
                             </div>
                         </div>
                     @empty
-                        <div class="rounded-lg bg-zinc-950/50 px-3 py-2.5 text-sm text-zinc-600">No data yet.</div>
+                        <div class="rounded-lg bg-zinc-950/50 px-3 py-2.5 text-sm text-zinc-600">No country data yet.</div>
                     @endforelse
                 </div>
             </section>
-        @endforeach
-    </div>
+        </div>
+    @endif
+
+    @if ($breakdowns !== [])
+        <div class="mt-6 grid gap-6 lg:grid-cols-2">
+            @foreach ($breakdowns as $metric => $config)
+                @php
+                    $rows = $metrics->get($metric) ?? collect();
+                    $total = max(1, (int) $rows->sum('count'));
+                @endphp
+                <section class="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <span class="rounded-lg bg-zinc-800/80 p-2 text-zinc-400"><x-icon.lucide :name="$config['icon']" /></span>
+                            <h2 class="font-medium">{{ $config['label'] }}</h2>
+                        </div>
+                        <span class="text-xs text-zinc-600 tabular-nums">{{ number_format((int) $rows->sum('count')) }}</span>
+                    </div>
+
+                    <div class="mt-5 space-y-2.5">
+                        @forelse ($rows->take(8) as $row)
+                            @php
+                                $percentage = ($row->count / $total) * 100;
+                            @endphp
+                            <div class="relative overflow-hidden rounded-lg bg-zinc-950/50">
+                                <div
+                                    class="absolute inset-y-0 left-0 bg-zinc-800/60"
+                                    style="width: {{ min(100, $percentage) }}%"
+                                ></div>
+                                <div class="relative flex items-center justify-between gap-4 px-3 py-2.5 text-sm">
+                                    <span
+                                        class="flex min-w-0 items-center gap-2.5 text-zinc-300"
+                                        title="{{ $row->value }}"
+                                    >
+                                        @if ($metric === \App\Enums\Metric::Client->value)
+                                            <x-icon.client :client="$row->value" />
+                                        @elseif ($metric === \App\Enums\Metric::Referrer->value)
+                                            <x-icon.favicon :domain="$row->value" />
+                                        @endif
+                                        <span class="truncate">{{ $row->value }}</span>
+                                    </span>
+                                    <span class="shrink-0 text-zinc-500 tabular-nums">{{ number_format($row->count) }} <span class="text-zinc-700">·</span> {{ number_format($percentage, 1) }}%</span>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="rounded-lg bg-zinc-950/50 px-3 py-2.5 text-sm text-zinc-600">No data yet.</div>
+                        @endforelse
+                    </div>
+                </section>
+            @endforeach
+        </div>
+    @endif
 
     <details class="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900/30 p-5">
         <summary class="cursor-pointer font-medium text-zinc-300">Collection setup</summary>
         <div class="mt-6 grid gap-6 xl:grid-cols-2">
             <section>
                 <h2 class="font-medium">Browser collection</h2>
-                <p class="mt-2 text-sm leading-6 text-zinc-400">The script only sends the full page URL and referrer. Untracked derives path, UTM values, country, client, OS and device in memory; the raw URL, IP, User-Agent and referrer are never persisted.</p>
+                <p class="mt-2 text-sm leading-6 text-zinc-400">The script only sends the full page URL and referrer. Untracked derives only enabled metrics in memory and persists only those enabled counters; the raw URL, IP, User-Agent and referrer are never persisted.</p>
                 <pre class="mt-4 overflow-x-auto rounded-lg bg-black/40 p-4 text-sm text-zinc-300"><code>&lt;script defer data-website-id="{{ $website->uuid }}" src="{{ url('/script.js') }}"&gt;&lt;/script&gt;</code></pre>
             </section>
 
             <section>
                 <h2 class="font-medium">Server-side collection</h2>
-                <p class="mt-2 text-sm leading-6 text-zinc-400">Send only the coarse values you actually want to keep. Bot dimensions are reduced with the same rules as raw collection.</p>
+                <p class="mt-2 text-sm leading-6 text-zinc-400">Send only the coarse values you actually want to keep. Disabled metrics are ignored even if they are present in the payload, and bot dimensions are reduced with the same rules as raw collection.</p>
                 <pre class="mt-4 overflow-x-auto rounded-lg bg-black/40 p-4 text-sm text-zinc-300"><code>POST {{ route('collect.processed', $website) }}
 
 {
