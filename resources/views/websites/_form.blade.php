@@ -142,7 +142,7 @@
                         type="checkbox"
                         name="metric_preferences[{{ $key }}]"
                         value="1"
-                        @checked (old("metric_preferences.{$key}", $website?->tracks($option['metric']) ?? true))
+                        @checked (old("metric_preferences.{$key}", $website?->isTracking($option['metric']) ?? true))
                         class="mt-1 rounded border-zinc-700 bg-zinc-900"
                     />
                     <span>
