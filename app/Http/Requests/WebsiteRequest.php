@@ -35,7 +35,7 @@ class WebsiteRequest extends FormRequest
         $metricPreferences = self::defaultMetricPreferences();
         $metricRules = [];
 
-        foreach (Metric::cases() as $metric) {
+        foreach (self::configurableMetrics() as $metric) {
             $metricRules["metric_preferences.{$metric->value}"] = ['required', 'boolean'];
         }
 
@@ -63,11 +63,22 @@ class WebsiteRequest extends FormRequest
         $attributes = $this->validated();
         $attributes['metric_preferences'] = [];
 
-        foreach (Metric::cases() as $metric) {
+        foreach (self::configurableMetrics() as $metric) {
             $attributes['metric_preferences'][$metric->value] = $this->boolean("metric_preferences.{$metric->value}");
         }
 
         return $attributes;
+    }
+
+    /**
+     * @return list<Metric>
+     */
+    private static function configurableMetrics(): array
+    {
+        return array_values(array_filter(
+            Metric::cases(),
+            static fn (Metric $metric): bool => $metric->isConfigurable(),
+        ));
     }
 
     /**
@@ -77,7 +88,7 @@ class WebsiteRequest extends FormRequest
     {
         $preferences = [];
 
-        foreach (Metric::cases() as $metric) {
+        foreach (self::configurableMetrics() as $metric) {
             $preferences[$metric->value] = true;
         }
 
