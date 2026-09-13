@@ -42,6 +42,21 @@ class WebsiteRequestTest extends TestCase
     }
 
     #[Test]
+    public function it_ignores_a_path_metric_preference(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $payload = $this->validPayload();
+        $payload['metric_preferences'][Metric::Path->value] = false;
+
+        $this->post(route('websites.store'), $payload)->assertRedirect();
+
+        $website = Website::query()->sole();
+
+        Assert::assertArrayNotHasKey(Metric::Path->value, $website->metric_preferences);
+        Assert::assertTrue($website->isTracking(Metric::Path));
+    }
+
+    #[Test]
     public function it_requires_the_domain_to_be_unique(): void
     {
         $this->actingAs(User::factory()->create());
@@ -107,6 +122,10 @@ class WebsiteRequestTest extends TestCase
         $preferences = [];
 
         foreach (Metric::cases() as $metric) {
+            if (! $metric->isConfigurable()) {
+                continue;
+            }
+
             $preferences[$metric->value] = true;
         }
 
