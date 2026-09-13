@@ -18,7 +18,7 @@ class WebsiteRequest extends FormRequest
     {
         if (! $this->exists('metric_preferences')) {
             $this->merge([
-                'metric_preferences' => self::defaultMetricPreferences(),
+                'metric_preferences' => Website::defaultMetricPreferences(),
             ]);
 
             return;
@@ -44,11 +44,11 @@ class WebsiteRequest extends FormRequest
     {
         /** @var Website|null $website */
         $website = $this->route('website');
-        $metricPreferences = self::defaultMetricPreferences();
+        $metricPreferences = Website::defaultMetricPreferences();
         $metricRules = [];
 
-        foreach (self::configurableMetrics() as $metric) {
-            $metricRules["metric_preferences.{$metric->value}"] = ['required', 'boolean'];
+        foreach (array_keys($metricPreferences) as $metric) {
+            $metricRules["metric_preferences.{$metric}"] = ['required', 'boolean'];
         }
 
         return [
@@ -75,35 +75,10 @@ class WebsiteRequest extends FormRequest
         $attributes = $this->validated();
         $attributes['metric_preferences'] = [];
 
-        foreach (self::configurableMetrics() as $metric) {
-            $attributes['metric_preferences'][$metric->value] = $this->boolean("metric_preferences.{$metric->value}");
+        foreach (array_keys(Website::defaultMetricPreferences()) as $metric) {
+            $attributes['metric_preferences'][$metric] = $this->boolean("metric_preferences.{$metric}");
         }
 
         return $attributes;
-    }
-
-    /**
-     * @return list<Metric>
-     */
-    private static function configurableMetrics(): array
-    {
-        return array_values(array_filter(
-            Metric::cases(),
-            static fn (Metric $metric): bool => $metric->isConfigurable(),
-        ));
-    }
-
-    /**
-     * @return array<string, bool>
-     */
-    private static function defaultMetricPreferences(): array
-    {
-        $preferences = [];
-
-        foreach (self::configurableMetrics() as $metric) {
-            $preferences[$metric->value] = true;
-        }
-
-        return $preferences;
     }
 }
