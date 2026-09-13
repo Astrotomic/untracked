@@ -2,11 +2,6 @@
 
 @php
     $metricOptions = [
-        \App\Enums\Metric::Path->value => [
-            'metric' => \App\Enums\Metric::Path,
-            'label' => 'Paths',
-            'description' => 'Requested paths, request totals and traffic trends.',
-        ],
         \App\Enums\Metric::Country->value => [
             'metric' => \App\Enums\Metric::Country,
             'label' => 'Countries',
@@ -127,8 +122,8 @@
     </label>
 
     <section class="rounded-lg border border-zinc-800 p-4">
-        <h2 class="font-medium">Metrics</h2>
-        <p class="mt-1 text-sm leading-6 text-zinc-500">Only enabled metrics are persisted and shown on the dashboard. Disabling a metric affects future collection; existing counters are kept.</p>
+        <h2 class="font-medium">Optional metrics</h2>
+        <p class="mt-1 text-sm leading-6 text-zinc-500">Paths are always tracked. Only enabled optional metrics are persisted and shown on the dashboard. Disabling a metric affects future collection; existing counters are kept.</p>
 
         <div class="mt-4 grid gap-3 sm:grid-cols-2">
             @foreach ($metricOptions as $key => $option)
