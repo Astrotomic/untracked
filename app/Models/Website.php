@@ -39,7 +39,9 @@ class Website extends Model
 
     public function tracks(Metric $metric): bool
     {
-        $preferences = $this->metric_preferences ?? [];
+        $preferences = is_array($this->metric_preferences)
+            ? $this->metric_preferences
+            : [];
 
         return (bool) ($preferences[$metric->value] ?? true);
     }
