@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @property array<string, bool>|null $metric_preferences
+ */
 class Website extends Model
 {
     use HasUuids;
@@ -39,11 +42,7 @@ class Website extends Model
 
     public function tracks(Metric $metric): bool
     {
-        $preferences = is_array($this->metric_preferences)
-            ? $this->metric_preferences
-            : [];
-
-        return (bool) ($preferences[$metric->value] ?? true);
+        return $this->metric_preferences[$metric->value] ?? true;
     }
 
     public function recordRaw(string $url, string $ip, string $userAgent, ?string $referrer): Dimensions
