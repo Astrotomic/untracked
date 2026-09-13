@@ -134,6 +134,10 @@ class RawCollectControllerTest extends TestCase
         $preferences = [];
 
         foreach (Metric::cases() as $metric) {
+            if (! $metric->isConfigurable()) {
+                continue;
+            }
+
             $preferences[$metric->value] = true;
         }
 
