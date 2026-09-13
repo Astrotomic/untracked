@@ -39,7 +39,7 @@
                     <span class="rounded-full border border-zinc-700 px-2 py-1 text-xs text-zinc-400">{{ $website->should_track_bots ? 'bots on' : 'bots off' }}</span>
                 </div>
 
-                @if ($stats['tracks_path'])
+                @if ($stats['is_tracking_path'])
                     <div class="mt-6 grid grid-cols-[minmax(0,1fr)_auto_auto] items-end gap-5">
                         <div class="h-12 min-w-0">
                             <canvas data-website-sparkline="{{ $website->getKey() }}"></canvas>
