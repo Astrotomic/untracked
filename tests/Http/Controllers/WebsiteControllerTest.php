@@ -193,6 +193,7 @@ class WebsiteControllerTest extends TestCase
         Assert::assertSame('Europe/Berlin', $website->timezone);
         Assert::assertTrue($website->should_track_bots);
         Assert::assertSame($this->metricPreferences(), $website->metric_preferences);
+        Assert::assertArrayNotHasKey(Metric::Path->value, $website->metric_preferences);
     }
 
     #[Test]
@@ -231,6 +232,7 @@ class WebsiteControllerTest extends TestCase
         Assert::assertFalse($website->should_track_bots);
         Assert::assertFalse($website->metric_preferences[Metric::Country->value]);
         Assert::assertIsBool($website->metric_preferences[Metric::Country->value]);
+        Assert::assertArrayNotHasKey(Metric::Path->value, $website->metric_preferences);
     }
 
     #[Test]
@@ -266,6 +268,10 @@ class WebsiteControllerTest extends TestCase
         $preferences = [];
 
         foreach (Metric::cases() as $metric) {
+            if (! $metric->isConfigurable()) {
+                continue;
+            }
+
             $preferences[$metric->value] = true;
         }
 
