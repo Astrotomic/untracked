@@ -57,37 +57,46 @@ class ListWebsitesController
         $websiteStats = $websites->mapWithKeys(function (Website $website) use ($dailyMetrics, $todayByWebsite): array {
             $today = $todayByWebsite->get($website->getKey());
             $metrics = $dailyMetrics->get($website->getKey(), collect());
+            $tracksPath = $website->tracks(Metric::Path);
+            $tracksDevice = $website->tracks(Metric::Device);
 
-            $pathRequests = $metrics
-                ->where('metric', Metric::Path->value)
-                ->mapWithKeys(fn (DailyMetric $metric): array => [
-                    (string) $metric->getRawOriginal('date') => $metric->count,
-                ]);
-            $botRequests = $metrics
-                ->where('metric', Metric::Device->value)
-                ->mapWithKeys(fn (DailyMetric $metric): array => [
-                    (string) $metric->getRawOriginal('date') => $metric->count,
-                ]);
+            $pathRequests = $tracksPath
+                ? $metrics
+                    ->where('metric', Metric::Path->value)
+                    ->mapWithKeys(fn (DailyMetric $metric): array => [
+                        (string) $metric->getRawOriginal('date') => $metric->count,
+                    ])
+                : collect();
+            $botRequests = $tracksDevice
+                ? $metrics
+                    ->where('metric', Metric::Device->value)
+                    ->mapWithKeys(fn (DailyMetric $metric): array => [
+                        (string) $metric->getRawOriginal('date') => $metric->count,
+                    ])
+                : collect();
 
-            $humanRequests = function (CarbonImmutable $date) use ($pathRequests, $botRequests): int {
+            $requests = function (CarbonImmutable $date) use ($pathRequests, $botRequests): int {
                 $key = $date->toDateString();
 
                 return max(0, (int) $pathRequests->get($key, 0) - (int) $botRequests->get($key, 0));
             };
 
             $sparkline = collect(range(6, 0))
-                ->map(fn (int $offset): int => $humanRequests($today->subDays($offset)))
+                ->map(fn (int $offset): int => $requests($today->subDays($offset)))
                 ->all();
 
             $currentSevenDays = collect(range(7, 1))
-                ->sum(fn (int $offset): int => $humanRequests($today->subDays($offset)));
+                ->sum(fn (int $offset): int => $requests($today->subDays($offset)));
             $previousSevenDays = collect(range(14, 8))
-                ->sum(fn (int $offset): int => $humanRequests($today->subDays($offset)));
+                ->sum(fn (int $offset): int => $requests($today->subDays($offset)));
             $difference = $currentSevenDays - $previousSevenDays;
+            $humanOnly = ! $website->should_track_bots || $tracksDevice;
 
             return [
                 $website->getKey() => [
-                    'today' => $humanRequests($today),
+                    'tracks_path' => $tracksPath,
+                    'today' => $requests($today),
+                    'traffic_label' => $humanOnly ? 'human today' : 'requests today',
                     'sparkline' => $sparkline,
                     'trend_direction' => match (true) {
                         $difference > 0 => 'up',

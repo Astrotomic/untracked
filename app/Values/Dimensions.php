@@ -26,9 +26,16 @@ final readonly class Dimensions implements Arrayable, Jsonable, JsonSerializable
         Website $website,
     ): self {
         $userAgent = UserAgentManager::make()->driver()->resolve($userAgent);
+        $isBot = $userAgent->isBot();
         $query = [];
 
-        if (! $userAgent->isBot()) {
+        if (! $isBot && (
+            $website->tracks(Metric::UtmSource)
+            || $website->tracks(Metric::UtmMedium)
+            || $website->tracks(Metric::UtmCampaign)
+            || $website->tracks(Metric::UtmTerm)
+            || $website->tracks(Metric::UtmContent)
+        )) {
             parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
         }
 
@@ -38,15 +45,17 @@ final readonly class Dimensions implements Arrayable, Jsonable, JsonSerializable
 
         return self::from(
             path: $url,
-            country: $userAgent->isBot() ? null : IpManager::make()->driver()->country($ip),
+            country: ! $isBot && $website->tracks(Metric::Country)
+                ? IpManager::make()->driver()->country($ip)
+                : null,
             userAgent: $userAgent,
             format: Format::Html,
-            referrer: $referrer,
-            utmSource: $utm('utm_source'),
-            utmMedium: $utm('utm_medium'),
-            utmCampaign: $utm('utm_campaign'),
-            utmTerm: $utm('utm_term'),
-            utmContent: $utm('utm_content'),
+            referrer: $website->tracks(Metric::Referrer) ? $referrer : null,
+            utmSource: $website->tracks(Metric::UtmSource) ? $utm('utm_source') : null,
+            utmMedium: $website->tracks(Metric::UtmMedium) ? $utm('utm_medium') : null,
+            utmCampaign: $website->tracks(Metric::UtmCampaign) ? $utm('utm_campaign') : null,
+            utmTerm: $website->tracks(Metric::UtmTerm) ? $utm('utm_term') : null,
+            utmContent: $website->tracks(Metric::UtmContent) ? $utm('utm_content') : null,
             website: $website,
         );
     }
