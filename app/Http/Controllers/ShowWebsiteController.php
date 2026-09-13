@@ -20,7 +20,6 @@ class ShowWebsiteController
 
         $today = now($website->timezone)->startOfDay();
         $from = $today->copy()->subDays($days - 1);
-        $isTrackingPath = $website->isTracking(Metric::Path);
         $isTrackingCountry = $website->isTracking(Metric::Country);
         $isTrackingDevice = $website->isTracking(Metric::Device);
         $showsBotTraffic = $website->should_track_bots && $isTrackingDevice;
@@ -39,14 +38,12 @@ class ShowWebsiteController
             ->groupBy('metric');
 
         /** @var Collection<string, int|string> $dailyRequests */
-        $dailyRequests = $isTrackingPath
-            ? (clone $query)
-                ->where('metric', Metric::Path->value)
-                ->selectRaw('date, SUM(count) as total')
-                ->groupBy('date')
-                ->orderBy('date')
-                ->pluck('total', 'date')
-            : collect();
+        $dailyRequests = (clone $query)
+            ->where('metric', Metric::Path->value)
+            ->selectRaw('date, SUM(count) as total')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->pluck('total', 'date');
 
         /** @var Collection<string, int|string> $dailyBotRequests */
         $dailyBotRequests = $isTrackingDevice
@@ -77,10 +74,8 @@ class ShowWebsiteController
                 return $point;
             });
 
-        $requests = $isTrackingPath
-            ? (int) $metrics->get(Metric::Path->value)?->sum(fn (DailyMetric $metric) => $metric->count)
-            : 0;
-        $pathCount = $isTrackingPath ? ($metrics->get(Metric::Path->value)?->count() ?? 0) : 0;
+        $requests = (int) $metrics->get(Metric::Path->value)?->sum(fn (DailyMetric $metric) => $metric->count);
+        $pathCount = $metrics->get(Metric::Path->value)?->count() ?? 0;
         $countryCount = $isTrackingCountry ? ($metrics->get(Metric::Country->value)?->count() ?? 0) : 0;
         $deviceMetrics = $isTrackingDevice ? ($metrics->get(Metric::Device->value) ?? collect()) : collect();
         $botRequests = (int) $deviceMetrics
