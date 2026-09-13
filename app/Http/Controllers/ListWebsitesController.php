@@ -57,17 +57,17 @@ class ListWebsitesController
         $websiteStats = $websites->mapWithKeys(function (Website $website) use ($dailyMetrics, $todayByWebsite): array {
             $today = $todayByWebsite->get($website->getKey());
             $metrics = $dailyMetrics->get($website->getKey(), collect());
-            $tracksPath = $website->tracks(Metric::Path);
-            $tracksDevice = $website->tracks(Metric::Device);
+            $isTrackingPath = $website->isTracking(Metric::Path);
+            $isTrackingDevice = $website->isTracking(Metric::Device);
 
-            $pathRequests = $tracksPath
+            $pathRequests = $isTrackingPath
                 ? $metrics
                     ->where('metric', Metric::Path->value)
                     ->mapWithKeys(fn (DailyMetric $metric): array => [
                         (string) $metric->getRawOriginal('date') => $metric->count,
                     ])
                 : collect();
-            $botRequests = $tracksDevice
+            $botRequests = $isTrackingDevice
                 ? $metrics
                     ->where('metric', Metric::Device->value)
                     ->mapWithKeys(fn (DailyMetric $metric): array => [
@@ -90,11 +90,11 @@ class ListWebsitesController
             $previousSevenDays = collect(range(14, 8))
                 ->sum(fn (int $offset): int => $requests($today->subDays($offset)));
             $difference = $currentSevenDays - $previousSevenDays;
-            $humanOnly = ! $website->should_track_bots || $tracksDevice;
+            $humanOnly = ! $website->should_track_bots || $isTrackingDevice;
 
             return [
                 $website->getKey() => [
-                    'tracks_path' => $tracksPath,
+                    'tracks_path' => $isTrackingPath,
                     'today' => $requests($today),
                     'traffic_label' => $humanOnly ? 'human today' : 'requests today',
                     'sparkline' => $sparkline,
